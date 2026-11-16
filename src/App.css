@@ -230,6 +230,12 @@
   background: rgba(255, 199, 44, 0.18);
 }
 
+.footer-link span {
+  font-size: 0.72rem;
+  text-align: center;
+  line-height: 1.1;
+}
+
 .orders-placeholder {
   background: #ffffff;
   border-radius: 20px;
@@ -1719,6 +1725,144 @@
   color: #6b5a4b;
 }
 
+.ticket-eta,
+.order-eta {
+  margin: 0;
+  color: #1f7a3a;
+  font-weight: 800;
+}
+
+.ticket-eta {
+  font-size: 1rem;
+}
+
+.account-card,
+.coupon-card,
+.coupon-box {
+  background: #ffffff;
+  border: 2px solid #f0e4cc;
+  border-radius: 20px;
+  padding: 16px;
+  box-shadow: 0 6px 0 #e6dcc8;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.account-card h2,
+.coupon-card h2,
+.coupon-box h2 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 900;
+  color: #2b1d12;
+}
+
+.account-form,
+.account-actions,
+.coupons-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.account-actions {
+  margin-top: 4px;
+}
+
+.muted-text {
+  margin: 0;
+  color: #6b5a4b;
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+
+.coupon-desc {
+  margin: 0;
+  color: #4f3f33;
+  font-weight: 600;
+}
+
+.coupon-benefit {
+  margin: 0;
+  color: #d62300;
+  font-weight: 900;
+}
+
+.coupon-code-row,
+.coupon-apply-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.coupon-apply-row input {
+  flex: 1;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 2px solid #eadfc7;
+  font: inherit;
+  background: #fffdf8;
+}
+
+.coupon-code {
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  background: #fff4d6;
+  border: 2px dashed #ffc72c;
+  border-radius: 10px;
+  padding: 6px 10px;
+  color: #5a1200;
+}
+
+.coupon-applied {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.coupon-applied p {
+  margin: 0;
+  color: #1f7a3a;
+  font-weight: 700;
+}
+
+.cart-total-row.discount {
+  color: #1f7a3a;
+}
+
+.cart-total-row.total-final {
+  font-size: 1.15rem;
+  border-top: 2px dashed #eadfc7;
+  padding-top: 8px;
+}
+
+.order-total-block {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.order-total.sub {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #6b5a4b;
+}
+
+.admin-check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  color: #2b1d12;
+}
+
+.admin-check input {
+  width: 18px;
+  height: 18px;
+  accent-color: #d62300;
+}
+
 .ticket-warn {
   margin: 0;
   font-weight: 700;
@@ -1821,4 +1965,26 @@
 .cart-remove:active {
   color: #d62300;
   transform: scale(0.95);
+}
+
+.stock-label,
+.menu-item-stock {
+  margin: 2px 0 0;
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: #1f7a3a;
+}
+
+.stock-label.out,
+.menu-item-stock.out {
+  color: #a11b1b;
+}
+
+.add-cart-button:disabled,
+.qty-control button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  filter: none;
+  box-shadow: none;
 }

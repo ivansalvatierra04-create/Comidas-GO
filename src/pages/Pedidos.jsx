@@ -57,17 +57,23 @@ function Pedidos() {
                     </li>
                   ))}
                 </ul>
-                <div className="order-total">
-                  <span>Total</span>
-                  <strong>{order.totalText || formatCurrency(order.total)}</strong>
+                <div className="order-total-block">
+                  {order.discount > 0 && (
+                    <>
+                      <div className="order-total sub"><span>Subtotal</span><span>{order.subtotalText || formatCurrency(order.subtotal || 0)}</span></div>
+                      <div className="order-total sub"><span>Cupón{order.coupon?.code ? ` (${order.coupon.code})` : ''}</span><span>-{order.discountText || formatCurrency(order.discount)}</span></div>
+                    </>
+                  )}
+                  <div className="order-total"><span>Total</span><strong>{order.totalText || formatCurrency(order.total)}</strong></div>
                 </div>
-                {(order.customer?.name || order.payment?.methodLabel) && (
+                {(order.customer?.name || order.payment?.methodLabel || order.estimate?.label || order.coupon?.code) && (
                   <div className="order-extra">
                     {order.customer?.name && <p><strong>Cliente:</strong> {order.customer.name} {order.customer.phone ? `(${order.customer.phone})` : ''}</p>}
                     {order.customer?.deliveryType && <p><strong>Entrega:</strong> {order.customer.deliveryType}</p>}
                     {order.customer?.address && <p><strong>Dirección:</strong> {order.customer.address}</p>}
                     {order.payment?.methodLabel && <p><strong>Pago:</strong> {order.payment.methodLabel}</p>}
                     {order.payment?.info && <p className="order-pay-info">{order.payment.info}</p>}
+                    {order.estimate?.label && <p className="order-eta"><strong>Tiempo estimado:</strong> {order.estimate.label}</p>}
                   </div>
                 )}
               </article>

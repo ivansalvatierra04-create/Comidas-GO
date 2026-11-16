@@ -22,17 +22,31 @@ export function saveOrders(orders) {
   window.dispatchEvent(new Event('orders-updated'))
 }
 
-export function createOrderFromCart(details = {}) {
-  const cart = getCart()
-  if (!cart.items.length) return null
-  const total = getCartTotal()
+export function createOrderFromCart(details = {}, cartSnapshot = null) {
+  const sourceItems = Array.isArray(cartSnapshot?.items) ? cartSnapshot.items : getCart().items
+  if (!sourceItems.length) return null
+  const total = Array.isArray(cartSnapshot?.items)
+    ? sourceItems.reduce((sum, item) => sum + (Number(item.priceValue) || 0) * (Number(item.quantity) || 0), 0)
+    : getCartTotal()
+  const discount = Math.max(0, Number(details.discountAmount) || 0)
+  const finalTotal = Math.max(0, Number(details.finalTotal ?? (total - discount)) || 0)
   const order = {
     id: createId(),
     createdAt: new Date().toISOString(),
     status: 'Pendiente',
-    items: cart.items.map((item) => ({ ...item })),
-    total,
-    totalText: formatCurrency(total),
+    items: sourceItems.map((item) => ({ ...item })),
+    subtotal: total,
+    subtotalText: formatCurrency(total),
+    discount: discount,
+    discountText: formatCurrency(discount),
+    total: finalTotal,
+    totalText: formatCurrency(finalTotal),
+    coupon: details.coupon ? {
+      code: details.coupon.code || '',
+      title: details.coupon.title || '',
+      type: details.coupon.type || '',
+      value: details.coupon.value || 0,
+    } : null,
     customer: {
       name: details.customerName || '',
       phone: details.customerPhone || '',
@@ -44,6 +58,11 @@ export function createOrderFromCart(details = {}) {
       method: details.paymentMethod || '',
       methodLabel: details.paymentMethodLabel || '',
       info: details.paymentInfo || '',
+    },
+    estimate: {
+      minutes: details.etaMinutes ?? null,
+      at: details.etaAt || '',
+      label: details.etaLabel || '',
     },
   }
   const orders = [order, ...getOrders()]
@@ -63,6 +82,10 @@ export function buildOrderMessage(order, storeName = '') {
     lines.push(`- ${item.quantity} x ${item.name} (${item.price || formatCurrency(item.priceValue)})`)
   })
   lines.push('')
+  if (order.discount > 0) {
+    lines.push(`*Subtotal:* ${order.subtotalText || formatCurrency(order.subtotal || order.total)}`)
+    lines.push(`*Cupón${order.coupon?.code ? ` (${order.coupon.code})` : ''}:* -${order.discountText || formatCurrency(order.discount)}`)
+  }
   lines.push(`*Total:* ${order.totalText || formatCurrency(order.total)}`)
   if (order.customer?.name || order.customer?.phone || order.customer?.address || order.customer?.deliveryType) {
     lines.push('')
@@ -77,6 +100,10 @@ export function buildOrderMessage(order, storeName = '') {
     lines.push('')
     lines.push(`*Forma de pago:* ${order.payment.methodLabel}`)
     if (order.payment.info) lines.push(order.payment.info)
+  }
+  if (order.estimate?.label || order.estimate?.at) {
+    lines.push('')
+    lines.push(`*Tiempo estimado:* ${order.estimate.label || new Date(order.estimate.at).toLocaleString('es-AR')}`)
   }
   return lines.join('\n')
 }

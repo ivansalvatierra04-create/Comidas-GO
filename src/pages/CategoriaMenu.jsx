@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import FooterNav from '../components/FooterNav.jsx'
 import Header from '../components/Header.jsx'
-import { getCategoryById } from '../data/categories.js'
+import { getCategoryById, getItemStock } from '../data/categories.js'
 
 function CategoriaMenu() {
   const { categoryId } = useParams()
@@ -68,6 +68,12 @@ function CategoriaMenu() {
                   </div>
                   {item.description && <p className="menu-item-desc">{item.description}</p>}
                   {item.price && <p className="menu-item-price">{item.price}</p>}
+                  {(() => {
+                    const stock = getItemStock(item)
+                    if (stock === null) return <p className="menu-item-stock">Stock: disponible</p>
+                    if (stock <= 0) return <p className="menu-item-stock out">Sin stock</p>
+                    return <p className="menu-item-stock">Disponible: {stock}</p>
+                  })()}
                 </div>
               </Link>
             ))}

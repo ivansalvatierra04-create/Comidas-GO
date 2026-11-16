@@ -2,7 +2,10 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import FooterNav from '../components/FooterNav.jsx'
 import Header from '../components/Header.jsx'
-import { formatCurrency, getCart, getCartTotal, removeFromCart, updateCartItemQuantity } from '../data/cart.js'
+import { getCurrentUser } from '../data/auth.js'
+import { formatCurrency, getCart, getCartTotal, removeFromCart, setCartCoupon, updateCartItemQuantity } from '../data/cart.js'
+import { decreaseStockForOrder, getItemById, getItemStock } from '../data/categories.js'
+import { calculateDiscount, findCouponByCode } from '../data/coupons.js'
 import { buildOrderMessage, createOrderFromCart } from '../data/orders.js'
 import { getSettings } from '../data/settings.js'
 
@@ -13,31 +16,47 @@ function sanitizeWhatsApp(phone) {
 function Carrito() {
   const [cart, setCart] = useState(() => getCart())
   const [settings, setSettings] = useState(() => getSettings())
+  const [user, setUser] = useState(() => getCurrentUser())
   const [customerName, setCustomerName] = useState('')
   const [customerPhone, setCustomerPhone] = useState('')
   const [deliveryType, setDeliveryType] = useState('Retiro en local')
   const [address, setAddress] = useState('')
   const [notes, setNotes] = useState('')
   const [paymentMethod, setPaymentMethod] = useState('efectivo')
+  const [couponInput, setCouponInput] = useState('')
+  const [couponMsg, setCouponMsg] = useState('')
   const [error, setError] = useState('')
   const [confirmedOrder, setConfirmedOrder] = useState(null)
 
   useEffect(() => {
     const sync = () => setCart(getCart())
     const syncSettings = () => setSettings(getSettings())
+    const syncAuth = () => setUser(getCurrentUser())
     window.addEventListener('storage', sync)
     window.addEventListener('cart-updated', sync)
     window.addEventListener('storage', syncSettings)
     window.addEventListener('settings-updated', syncSettings)
+    window.addEventListener('storage', syncAuth)
+    window.addEventListener('auth-updated', syncAuth)
     return () => {
       window.removeEventListener('storage', sync)
       window.removeEventListener('cart-updated', sync)
       window.removeEventListener('storage', syncSettings)
       window.removeEventListener('settings-updated', syncSettings)
+      window.removeEventListener('storage', syncAuth)
+      window.removeEventListener('auth-updated', syncAuth)
     }
   }, [])
 
-  const total = getCartTotal()
+  useEffect(() => {
+    if (user && !customerName && user.name) setCustomerName(user.name)
+    if (user && !customerPhone && user.phone) setCustomerPhone(user.phone)
+  }, [user])
+
+  const subtotal = getCartTotal()
+  const appliedCoupon = user && cart.couponCode ? findCouponByCode(cart.couponCode) : null
+  const discount = appliedCoupon ? calculateDiscount(subtotal, appliedCoupon) : 0
+  const total = Math.max(0, subtotal - discount)
 
   const paymentOptions = useMemo(() => ({
     efectivo: { label: 'Efectivo', info: settings.paymentCashInfo || 'Pago en efectivo.' },
@@ -63,6 +82,28 @@ function Carrito() {
       return
     }
 
+    for (const item of cart.items) {
+      const { item: liveItem } = getItemById(item.categoryId, item.itemId)
+      if (!liveItem) {
+        setError(`El producto "${item.name}" ya no está disponible.`)
+        return
+      }
+      const stock = getItemStock(liveItem)
+      if (stock !== null && item.quantity > stock) {
+        setError(`No hay stock suficiente de "${item.name}". Disponible: ${stock}.`)
+        return
+      }
+    }
+
+    const etaMinutes = deliveryType === 'Envío a domicilio'
+      ? (Number(settings.etaDeliveryMinutes) || 40)
+      : (Number(settings.etaPickupMinutes) || 20)
+    const etaAtDate = new Date(Date.now() + etaMinutes * 60 * 1000)
+    const etaLabel = deliveryType === 'Envío a domicilio'
+      ? `Llega aprox. en ${etaMinutes} min (${etaAtDate.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })})`
+      : `Listo para retirar aprox. en ${etaMinutes} min (${etaAtDate.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })})`
+
+    const snapshotItems = getCart().items.map((i) => ({ ...i }))
     const order = createOrderFromCart({
       customerName: customerName.trim(),
       customerPhone: customerPhone.trim(),
@@ -72,9 +113,18 @@ function Carrito() {
       paymentMethod,
       paymentMethodLabel: selectedPayment.label,
       paymentInfo: selectedPayment.info,
-    })
+      etaMinutes,
+      etaAt: etaAtDate.toISOString(),
+      etaLabel,
+      discountAmount: discount,
+      finalTotal: total,
+      coupon: appliedCoupon ? { code: appliedCoupon.code, title: appliedCoupon.title, type: appliedCoupon.type, value: appliedCoupon.value } : null,
+    }, { items: snapshotItems })
 
-    if (order) setConfirmedOrder(order)
+    if (order) {
+      decreaseStockForOrder(snapshotItems)
+      setConfirmedOrder(order)
+    }
   }
 
   if (confirmedOrder) {
@@ -102,6 +152,12 @@ function Carrito() {
                 </div>
               ))}
               <hr />
+              {confirmedOrder.discount > 0 && (
+                <>
+                  <div className="ticket-line"><span>Subtotal</span><span>{confirmedOrder.subtotalText}</span></div>
+                  <div className="ticket-line"><span>Cupón{confirmedOrder.coupon?.code ? ` (${confirmedOrder.coupon.code})` : ''}</span><span>-{confirmedOrder.discountText}</span></div>
+                </>
+              )}
               <div className="ticket-line total"><span>Total</span><strong>{confirmedOrder.totalText}</strong></div>
               <hr />
               <p><strong>Cliente:</strong> {confirmedOrder.customer.name} ({confirmedOrder.customer.phone})</p>
@@ -110,6 +166,12 @@ function Carrito() {
               {confirmedOrder.customer.notes && <p><strong>Notas:</strong> {confirmedOrder.customer.notes}</p>}
               <p><strong>Pago:</strong> {confirmedOrder.payment.methodLabel}</p>
               {confirmedOrder.payment.info && <p className="ticket-info">{confirmedOrder.payment.info}</p>}
+              {confirmedOrder.estimate?.label && (
+                <>
+                  <hr />
+                  <p className="ticket-eta"><strong>Tiempo estimado:</strong> {confirmedOrder.estimate.label}</p>
+                </>
+              )}
             </div>
 
             <div className="ticket-actions">
@@ -145,7 +207,12 @@ function Carrito() {
         ) : (
           <>
             <section className="cart-list">
-              {cart.items.map((item) => (
+              {cart.items.map((item) => {
+                const { item: liveItem } = getItemById(item.categoryId, item.itemId)
+                const stock = liveItem ? getItemStock(liveItem) : 0
+                const out = stock !== null && stock <= 0
+                const over = stock !== null && item.quantity > stock
+                return (
                 <article key={`${item.categoryId}-${item.itemId}`} className="cart-item">
                   {item.image ? (
                     <img src={item.image} alt={item.name} className="cart-item-image" />
@@ -158,17 +225,19 @@ function Carrito() {
                       {item.discount && <span className="promo-badge">{item.discount}</span>}
                     </div>
                     <p className="cart-item-price">{item.price || formatCurrency(item.priceValue)}</p>
+                    {stock !== null && <p className={`menu-item-stock ${out || over ? 'out' : ''}`}>{out ? 'Sin stock' : `Disponible: ${stock}`}</p>}
+                    {over && <p className="checkout-error">Ajustá la cantidad: solo hay {stock} disponible(s).</p>}
                     <div className="cart-item-actions">
                       <div className="qty-control">
-                        <button type="button" onClick={() => updateCartItemQuantity(item.itemId, item.categoryId, item.quantity - 1)}>-</button>
+                        <button type="button" onClick={() => updateCartItemQuantity(item.itemId, item.categoryId, item.quantity - 1, stock)}>-</button>
                         <span>{item.quantity}</span>
-                        <button type="button" onClick={() => updateCartItemQuantity(item.itemId, item.categoryId, item.quantity + 1)}>+</button>
+                        <button type="button" onClick={() => updateCartItemQuantity(item.itemId, item.categoryId, item.quantity + 1, stock)} disabled={stock !== null && item.quantity >= stock}>+</button>
                       </div>
                       <button type="button" className="cart-remove" onClick={() => removeFromCart(item.itemId, item.categoryId)}>Quitar</button>
                     </div>
                   </div>
                 </article>
-              ))}
+              )})}
             </section>
 
             <section className="checkout-form">
@@ -217,10 +286,51 @@ function Carrito() {
             </section>
 
             <section className="cart-summary">
-              <div className="cart-total-row">
-                <span>Total</span>
-                <strong>{formatCurrency(total)}</strong>
+              <div className="coupon-box">
+                <h2>Cupón</h2>
+                {!user ? (
+                  <p className="muted-text">Iniciá sesión en <Link to="/cuenta">Mi cuenta</Link> para aplicar cupones.</p>
+                ) : (
+                  <>
+                    <div className="coupon-apply-row">
+                      <input
+                        type="text"
+                        value={couponInput || cart.couponCode || ''}
+                        onChange={(e) => { setCouponInput(e.target.value.toUpperCase()); setCouponMsg('') }}
+                        placeholder="Código de cupón"
+                      />
+                      <button
+                        type="button"
+                        className="admin-secondary"
+                        onClick={() => {
+                          const code = String(couponInput || cart.couponCode || '').trim().toUpperCase()
+                          const found = findCouponByCode(code)
+                          if (!found) {
+                            setCartCoupon('')
+                            setCouponMsg('Cupón no válido o no disponible.')
+                            return
+                          }
+                          setCartCoupon(found.code)
+                          setCouponInput(found.code)
+                          setCouponMsg(`Cupón "${found.code}" aplicado.`)
+                        }}
+                      >Aplicar</button>
+                    </div>
+                    {appliedCoupon && (
+                      <div className="coupon-applied">
+                        <p><strong>{appliedCoupon.code}</strong> - {appliedCoupon.title}</p>
+                        <button type="button" className="cart-remove" onClick={() => { setCartCoupon(''); setCouponInput(''); setCouponMsg('Cupón quitado.') }}>Quitar cupón</button>
+                      </div>
+                    )}
+                    {!appliedCoupon && cart.couponCode && <p className="checkout-error">El cupón guardado ya no está disponible.</p>}
+                    {couponMsg && <p className={couponMsg.includes('aplicado') ? 'added-msg' : 'checkout-error'}>{couponMsg}</p>}
+                  </>
+                )}
               </div>
+
+              <div className="cart-total-row"><span>Subtotal</span><strong>{formatCurrency(subtotal)}</strong></div>
+              {discount > 0 && <div className="cart-total-row discount"><span>Descuento cupón</span><strong>-{formatCurrency(discount)}</strong></div>}
+              <div className="cart-total-row total-final"><span>Total</span><strong>{formatCurrency(total)}</strong></div>
               {error && <p className="checkout-error">{error}</p>}
               <div className="cart-summary-actions">
                 <Link to="/categorias" className="admin-secondary cart-link-btn">Seguir comprando</Link>

@@ -1561,3 +1561,264 @@
   flex-direction: column;
   gap: 8px;
 }
+
+.admin-subsection-title {
+  margin: 6px 0 0;
+  font-size: 1rem;
+  font-weight: 900;
+  color: #2b1d12;
+}
+
+.checkout-form {
+  background: #ffffff;
+  border: 2px solid #f0e4cc;
+  border-radius: 20px;
+  padding: 16px;
+  box-shadow: 0 6px 0 #e6dcc8;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.checkout-form h2 {
+  margin: 4px 0 2px;
+  font-size: 1.05rem;
+  font-weight: 900;
+  color: #2b1d12;
+}
+
+.checkout-select {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 2px solid #eadfc7;
+  font: inherit;
+  background: #fffdf8;
+  color: #2b1d12;
+}
+
+.payment-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.payment-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 2px solid #eadfc7;
+  border-radius: 12px;
+  background: #fffdf8;
+  font-weight: 700;
+  color: #2b1d12;
+  cursor: pointer;
+}
+
+.payment-option.active {
+  border-color: #ffc72c;
+  background: #fff7e0;
+}
+
+.payment-option input {
+  accent-color: #d62300;
+}
+
+.payment-info-box {
+  background: #fff4d6;
+  border: 2px solid #ffd97a;
+  border-radius: 12px;
+  padding: 10px 12px;
+  color: #4f3f33;
+  font-weight: 600;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.payment-info-box p {
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.payment-link,
+.ticket-wa {
+  text-decoration: none;
+  text-align: center;
+}
+
+.checkout-error {
+  margin: 0;
+  color: #a11b1b;
+  font-weight: 800;
+}
+
+.checkout-ticket {
+  background: #ffffff;
+  border: 2px solid #f0e4cc;
+  border-radius: 20px;
+  padding: 18px;
+  box-shadow: 0 6px 0 #e6dcc8;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.checkout-ticket h1 {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 900;
+  color: #2b1d12;
+}
+
+.ticket-sub {
+  margin: -6px 0 0;
+  color: #6b5a4b;
+  font-weight: 700;
+}
+
+.ticket-box {
+  border: 2px dashed #eadfc7;
+  border-radius: 14px;
+  padding: 14px;
+  background: #fffdf8;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: #2b1d12;
+}
+
+.ticket-box p {
+  margin: 0;
+  font-weight: 600;
+}
+
+.ticket-box hr {
+  border: none;
+  border-top: 2px dashed #eadfc7;
+  margin: 6px 0;
+}
+
+.ticket-line {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-weight: 600;
+}
+
+.ticket-line.total {
+  font-size: 1.05rem;
+  font-weight: 900;
+}
+
+.ticket-info,
+.order-pay-info,
+.ticket-warn {
+  font-size: 0.92rem;
+  color: #6b5a4b;
+}
+
+.ticket-warn {
+  margin: 0;
+  font-weight: 700;
+  color: #a11b1b;
+  background: #fff4d6;
+  border: 2px solid #ffd97a;
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+
+.ticket-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.order-extra {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 2px dashed #eadfc7;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.order-extra p {
+  margin: 0;
+  color: #4f3f33;
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+
+/* Feedback al presionar botones */
+.home-button,
+.add-cart-button,
+.quick-add-button,
+.admin-primary,
+.admin-secondary,
+.icon-button,
+.back-link,
+.footer-item,
+.qty-control button,
+.cart-remove,
+.payment-option,
+.menu-item-card,
+.category-card-link,
+.view-all-button,
+.payment-link,
+.ticket-wa,
+.cart-link-btn {
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.08s ease, filter 0.12s ease, background-color 0.12s ease, box-shadow 0.12s ease;
+}
+
+.home-button:active,
+.add-cart-button:active,
+.quick-add-button:active,
+.admin-primary:active,
+.ticket-wa:active {
+  filter: brightness(0.88);
+  transform: translateY(2px) scale(0.98);
+  box-shadow: 0 2px 0 #8f1700;
+}
+
+.admin-secondary:active,
+.cart-link-btn:active,
+.back-link:active,
+.view-all-button:active {
+  background-color: #ffe08a;
+  filter: brightness(0.95);
+  transform: scale(0.98);
+}
+
+.icon-button:active {
+  background-color: rgba(255, 247, 224, 0.3);
+  transform: scale(0.92);
+}
+
+.qty-control button:active {
+  filter: brightness(0.85);
+  transform: scale(0.92);
+}
+
+.footer-item:active {
+  background-color: rgba(255, 247, 224, 0.25);
+  transform: scale(0.97);
+}
+
+.menu-item-card:active,
+.category-card-link:active {
+  transform: scale(0.98);
+  filter: brightness(0.97);
+}
+
+.payment-option:active {
+  background-color: #ffe8a3;
+  transform: scale(0.99);
+}
+
+.cart-remove:active {
+  color: #d62300;
+  transform: scale(0.95);
+}

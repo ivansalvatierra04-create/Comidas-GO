@@ -61,6 +61,15 @@ function Pedidos() {
                   <span>Total</span>
                   <strong>{order.totalText || formatCurrency(order.total)}</strong>
                 </div>
+                {(order.customer?.name || order.payment?.methodLabel) && (
+                  <div className="order-extra">
+                    {order.customer?.name && <p><strong>Cliente:</strong> {order.customer.name} {order.customer.phone ? `(${order.customer.phone})` : ''}</p>}
+                    {order.customer?.deliveryType && <p><strong>Entrega:</strong> {order.customer.deliveryType}</p>}
+                    {order.customer?.address && <p><strong>Dirección:</strong> {order.customer.address}</p>}
+                    {order.payment?.methodLabel && <p><strong>Pago:</strong> {order.payment.methodLabel}</p>}
+                    {order.payment?.info && <p className="order-pay-info">{order.payment.info}</p>}
+                  </div>
+                )}
               </article>
             ))}
           </div>

@@ -11,6 +11,10 @@ export const defaultSettings = {
   aboutPhoto: '',
   phone: '',
   address: '',
+  whatsapp: '',
+  paymentCashInfo: 'Pago en efectivo al recibir/retirar.',
+  paymentTransferInfo: '',
+  paymentMpLink: '',
 }
 
 export function getSettings() {
@@ -31,6 +35,10 @@ export function getSettings() {
       aboutPhoto: parsed.aboutPhoto ?? '',
       phone: parsed.phone ?? '',
       address: parsed.address ?? '',
+      whatsapp: parsed.whatsapp ?? '',
+      paymentCashInfo: parsed.paymentCashInfo ?? defaultSettings.paymentCashInfo,
+      paymentTransferInfo: parsed.paymentTransferInfo ?? '',
+      paymentMpLink: parsed.paymentMpLink ?? '',
     }
   } catch {
     return defaultSettings

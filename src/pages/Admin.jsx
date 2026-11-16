@@ -184,6 +184,10 @@ function Admin() {
       aboutPhoto: settings.aboutPhoto?.trim() || '',
       phone: settings.phone?.trim() || '',
       address: settings.address?.trim() || '',
+      whatsapp: settings.whatsapp?.trim() || '',
+      paymentCashInfo: settings.paymentCashInfo?.trim() || defaultSettings.paymentCashInfo,
+      paymentTransferInfo: settings.paymentTransferInfo?.trim() || '',
+      paymentMpLink: settings.paymentMpLink?.trim() || '',
     }
     setSettings(cleaned)
     saveSettings(cleaned)
@@ -281,6 +285,46 @@ function Admin() {
               onChange={(e) => updateSetting('address', e.target.value)}
               placeholder="Ej: Av. Siempre Viva 123, Ciudad"
               rows={3}
+            />
+          </label>
+
+          <h3 className="admin-subsection-title">Cobro y pedidos (WhatsApp)</h3>
+
+          <label className="admin-field">
+            <span>WhatsApp del local (para recibir pedidos, con código de país, ej: 5491112345678)</span>
+            <input
+              type="text"
+              value={settings.whatsapp || ''}
+              onChange={(e) => updateSetting('whatsapp', e.target.value)}
+              placeholder="Ej: 5491112345678"
+            />
+          </label>
+          <label className="admin-field">
+            <span>Instrucciones para pago en efectivo</span>
+            <input
+              type="text"
+              value={settings.paymentCashInfo || ''}
+              onChange={(e) => updateSetting('paymentCashInfo', e.target.value)}
+              placeholder="Ej: Pago en efectivo al recibir/retirar."
+            />
+          </label>
+          <label className="admin-field">
+            <span>Datos para transferencia (alias/CBU/instrucciones)</span>
+            <textarea
+              className="admin-textarea"
+              rows={2}
+              value={settings.paymentTransferInfo || ''}
+              onChange={(e) => updateSetting('paymentTransferInfo', e.target.value)}
+              placeholder="Ej: Alias: mi.local  |  CBU: ..."
+            />
+          </label>
+          <label className="admin-field">
+            <span>Link de Mercado Pago (o link de cobro)</span>
+            <input
+              type="text"
+              value={settings.paymentMpLink || ''}
+              onChange={(e) => updateSetting('paymentMpLink', e.target.value)}
+              placeholder="https://..."
             />
           </label>
           <div className="admin-actions">

@@ -32,12 +32,12 @@ function CategoriesSection() {
       </div>
       <div className="categories-list">
         {preview.map((category) => (
-          <div key={category.id} className="category-card">
+          <Link key={category.id} to={`/categoria/${category.id}`} className="category-card">
             <div className="category-icon-wrap">
               <CategoryIcon category={category} />
             </div>
             <span className="category-name">{category.name}</span>
-          </div>
+          </Link>
         ))}
         {preview.length === 0 && <p className="categories-empty">No hay categorías</p>}
       </div>

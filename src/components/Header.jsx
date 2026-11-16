@@ -1,19 +1,27 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import defaultLogo from '../assets/logo.svg'
+import { getCartCount } from '../data/cart.js'
 import { getSettings } from '../data/settings.js'
 
 function Header() {
   const [open, setOpen] = useState(false)
   const [settings, setSettings] = useState(() => getSettings())
+  const [cartCount, setCartCount] = useState(() => getCartCount())
+  const navigate = useNavigate()
 
   useEffect(() => {
     const sync = () => setSettings(getSettings())
+    const syncCart = () => setCartCount(getCartCount())
     window.addEventListener('storage', sync)
     window.addEventListener('settings-updated', sync)
+    window.addEventListener('storage', syncCart)
+    window.addEventListener('cart-updated', syncCart)
     return () => {
       window.removeEventListener('storage', sync)
       window.removeEventListener('settings-updated', sync)
+      window.removeEventListener('storage', syncCart)
+      window.removeEventListener('cart-updated', syncCart)
     }
   }, [])
 
@@ -41,12 +49,18 @@ function Header() {
         </span>
       </div>
 
-      <button type="button" className="icon-button cart-button" aria-label="Carrito de compras">
+      <button
+        type="button"
+        className="icon-button cart-button cart-button-wrap"
+        aria-label="Carrito de compras"
+        onClick={() => navigate('/carrito')}
+      >
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <path d="M3 4h2l2.2 10.2a2 2 0 0 0 2 1.6h7.5a2 2 0 0 0 2-1.5L20 7H7.2" />
           <circle cx="10" cy="19" r="1.5" />
           <circle cx="17" cy="19" r="1.5" />
         </svg>
+        {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
       </button>
 
       {open && (

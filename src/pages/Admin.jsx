@@ -36,6 +36,42 @@ function Admin() {
     setCategories((current) => current.map((cat) => (cat.id === id ? { ...cat, [field]: value } : cat)))
   }
 
+  const addItem = (categoryId) => {
+    setCategories((current) =>
+      current.map((cat) =>
+        cat.id === categoryId
+          ? {
+              ...cat,
+              items: [...(cat.items || []), { id: createId(), name: 'Nueva comida', description: '', price: '', image: '', discount: '' }],
+            }
+          : cat,
+      ),
+    )
+  }
+
+  const removeItem = (categoryId, itemId) => {
+    setCategories((current) =>
+      current.map((cat) =>
+        cat.id === categoryId
+          ? { ...cat, items: (cat.items || []).filter((item) => item.id !== itemId) }
+          : cat,
+      ),
+    )
+  }
+
+  const updateItem = (categoryId, itemId, field, value) => {
+    setCategories((current) =>
+      current.map((cat) =>
+        cat.id === categoryId
+          ? {
+              ...cat,
+              items: (cat.items || []).map((item) => (item.id === itemId ? { ...item, [field]: value } : item)),
+            }
+          : cat,
+      ),
+    )
+  }
+
   const updatePromotion = (id, field, value) => {
     setPromotions((current) => current.map((promo) => (promo.id === id ? { ...promo, [field]: value } : promo)))
   }
@@ -53,7 +89,7 @@ function Admin() {
   }
 
   const addCategory = () => {
-    setCategories((current) => [...current, { id: createId(), name: 'Nueva categoría', icon: '🍽️', image: '' }])
+    setCategories((current) => [...current, { id: createId(), name: 'Nueva categoría', icon: '🍽️', image: '', items: [] }])
   }
 
   const removeCategory = (id) => {
@@ -93,11 +129,19 @@ function Admin() {
       name: cat.name?.trim() || 'Sin nombre',
       icon: cat.icon?.trim() || '🍽️',
       image: cat.image?.trim() || '',
+      items: (cat.items || []).map((item, itemIndex) => ({
+        id: item.id || `${cat.id || index + 1}-${itemIndex + 1}`,
+        name: item.name?.trim() || 'Sin nombre',
+        description: item.description?.trim() || '',
+        price: item.price?.trim() || '',
+        image: item.image?.trim() || '',
+        discount: item.discount?.trim() || '',
+      })),
     }))
     setCategories(cleaned)
     saveCategories(cleaned)
     window.dispatchEvent(new Event('categories-updated'))
-    showMessage('Categorías guardadas')
+    showMessage('Categorías y comidas guardadas')
   }
 
   const handleResetCategories = () => {
@@ -159,7 +203,7 @@ function Admin() {
       <header className="admin-header">
         <Link to="/inicio" className="admin-back">← Volver</Link>
         <h1>Administrar app</h1>
-        <p>Cambia el local, las categorías y el carrusel.</p>
+        <p>Cambia el local, las categorías, las comidas, promociones y el carrusel.</p>
       </header>
 
       <main className="admin-content">
@@ -245,12 +289,12 @@ function Admin() {
           </div>
         </section>
 
-        <h2 className="admin-section-title standalone">Categorías</h2>
+        <h2 className="admin-section-title standalone">Categorías y comidas</h2>
         {categories.map((cat) => (
           <section key={cat.id} className="admin-card">
             <div className="admin-card-head">
               <h2>{cat.name || 'Categoría'}</h2>
-              <button type="button" className="admin-danger" onClick={() => removeCategory(cat.id)}>Eliminar</button>
+              <button type="button" className="admin-danger" onClick={() => removeCategory(cat.id)}>Eliminar categoría</button>
             </div>
             <label className="admin-field">
               <span>Nombre de la categoría</span>
@@ -261,24 +305,58 @@ function Admin() {
               <input type="text" value={cat.icon} onChange={(e) => updateCategory(cat.id, 'icon', e.target.value)} placeholder="🍕" />
             </label>
             <label className="admin-field">
-              <span>URL de imagen (opcional, reemplaza emoji)</span>
-              <input type="text" value={cat.image.startsWith('data:') ? '' : cat.image} onChange={(e) => updateCategory(cat.id, 'image', e.target.value)} placeholder="https://..." />
+              <span>URL de imagen de categoría (opcional)</span>
+              <input type="text" value={(cat.image || '').startsWith('data:') ? '' : (cat.image || '')} onChange={(e) => updateCategory(cat.id, 'image', e.target.value)} placeholder="https://..." />
             </label>
             <label className="admin-field">
-              <span>O subir imagen</span>
+              <span>O subir imagen de categoría</span>
               <input type="file" accept="image/*" onChange={(e) => readFileAsDataUrl(e.target.files?.[0], (v) => updateCategory(cat.id, 'image', v))} />
             </label>
-            {(cat.image || cat.icon) && (
-              <div className="admin-category-preview">
-                {cat.image ? <img src={cat.image} alt={cat.name} /> : <span>{cat.icon}</span>}
-              </div>
-            )}
+
+            <div className="admin-items">
+              <h3 className="admin-subsection-title">Comidas de esta categoría</h3>
+              {(cat.items || []).length === 0 && <p className="categories-empty">No hay comidas cargadas.</p>}
+              {(cat.items || []).map((item, itemIndex) => (
+                <div key={item.id} className="admin-item-card">
+                  <div className="admin-card-head">
+                    <h2>Comida {itemIndex + 1}</h2>
+                    <button type="button" className="admin-danger" onClick={() => removeItem(cat.id, item.id)}>Eliminar comida</button>
+                  </div>
+                  <label className="admin-field">
+                    <span>Nombre</span>
+                    <input type="text" value={item.name} onChange={(e) => updateItem(cat.id, item.id, 'name', e.target.value)} />
+                  </label>
+                  <label className="admin-field">
+                    <span>Descripción</span>
+                    <textarea className="admin-textarea" rows={2} value={item.description || ''} onChange={(e) => updateItem(cat.id, item.id, 'description', e.target.value)} />
+                  </label>
+                  <label className="admin-field">
+                    <span>Precio</span>
+                    <input type="text" value={item.price || ''} onChange={(e) => updateItem(cat.id, item.id, 'price', e.target.value)} placeholder="Ej: $8.500" />
+                  </label>
+                  <label className="admin-field">
+                    <span>Descuento (opcional)</span>
+                    <input type="text" value={item.discount || ''} onChange={(e) => updateItem(cat.id, item.id, 'discount', e.target.value)} placeholder="Ej: 10% OFF" />
+                  </label>
+                  <label className="admin-field">
+                    <span>URL de imagen</span>
+                    <input type="text" value={(item.image || '').startsWith('data:') ? '' : (item.image || '')} onChange={(e) => updateItem(cat.id, item.id, 'image', e.target.value)} placeholder="https://..." />
+                  </label>
+                  <label className="admin-field">
+                    <span>O subir imagen</span>
+                    <input type="file" accept="image/*" onChange={(e) => readFileAsDataUrl(e.target.files?.[0], (v) => updateItem(cat.id, item.id, 'image', v))} />
+                  </label>
+                  {item.image ? <img src={item.image} alt={item.name} className="admin-preview" /> : <div className="admin-preview empty">Sin imagen</div>}
+                </div>
+              ))}
+              <button type="button" className="admin-secondary" onClick={() => addItem(cat.id)}>Agregar comida a esta categoría</button>
+            </div>
           </section>
         ))}
         <div className="admin-actions">
           <button type="button" className="admin-secondary" onClick={addCategory}>Agregar categoría</button>
-          <button type="button" className="admin-secondary" onClick={handleResetCategories}>Restaurar categorías</button>
-          <button type="button" className="admin-primary" onClick={handleSaveCategories}>Guardar categorías</button>
+          <button type="button" className="admin-secondary" onClick={handleResetCategories}>Restaurar categorías y comidas</button>
+          <button type="button" className="admin-primary" onClick={handleSaveCategories}>Guardar categorías y comidas</button>
         </div>
 
         <h2 className="admin-section-title standalone">Promociones</h2>

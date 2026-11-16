@@ -34,12 +34,12 @@ function Categorias() {
         </div>
         <div className="all-categories-grid">
           {categories.map((category) => (
-            <div key={category.id} className="category-card large">
+            <Link key={category.id} to={`/categoria/${category.id}`} className="category-card large">
               <div className="category-icon-wrap">
                 <CategoryIcon category={category} />
               </div>
               <span className="category-name">{category.name}</span>
-            </div>
+            </Link>
           ))}
           {categories.length === 0 && <p className="categories-empty">No hay categorías cargadas.</p>}
         </div>

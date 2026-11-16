@@ -77,6 +77,14 @@ function Carrito() {
       }
     }
 
+    const etaMinutes = deliveryType === 'Envío a domicilio'
+      ? (Number(settings.etaDeliveryMinutes) || 40)
+      : (Number(settings.etaPickupMinutes) || 20)
+    const etaAtDate = new Date(Date.now() + etaMinutes * 60 * 1000)
+    const etaLabel = deliveryType === 'Envío a domicilio'
+      ? `Llega aprox. en ${etaMinutes} min (${etaAtDate.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })})`
+      : `Listo para retirar aprox. en ${etaMinutes} min (${etaAtDate.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })})`
+
     const snapshotItems = getCart().items.map((i) => ({ ...i }))
     const order = createOrderFromCart({
       customerName: customerName.trim(),
@@ -87,6 +95,9 @@ function Carrito() {
       paymentMethod,
       paymentMethodLabel: selectedPayment.label,
       paymentInfo: selectedPayment.info,
+      etaMinutes,
+      etaAt: etaAtDate.toISOString(),
+      etaLabel,
     }, { items: snapshotItems })
 
     if (order) {
@@ -128,6 +139,12 @@ function Carrito() {
               {confirmedOrder.customer.notes && <p><strong>Notas:</strong> {confirmedOrder.customer.notes}</p>}
               <p><strong>Pago:</strong> {confirmedOrder.payment.methodLabel}</p>
               {confirmedOrder.payment.info && <p className="ticket-info">{confirmedOrder.payment.info}</p>}
+              {confirmedOrder.estimate?.label && (
+                <>
+                  <hr />
+                  <p className="ticket-eta"><strong>Tiempo estimado:</strong> {confirmedOrder.estimate.label}</p>
+                </>
+              )}
             </div>
 
             <div className="ticket-actions">

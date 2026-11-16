@@ -194,6 +194,8 @@ function Admin() {
       paymentCashInfo: settings.paymentCashInfo?.trim() || defaultSettings.paymentCashInfo,
       paymentTransferInfo: settings.paymentTransferInfo?.trim() || '',
       paymentMpLink: settings.paymentMpLink?.trim() || '',
+      etaPickupMinutes: Number.isFinite(Number(settings.etaPickupMinutes)) ? Math.max(1, Math.floor(Number(settings.etaPickupMinutes))) : defaultSettings.etaPickupMinutes,
+      etaDeliveryMinutes: Number.isFinite(Number(settings.etaDeliveryMinutes)) ? Math.max(1, Math.floor(Number(settings.etaDeliveryMinutes))) : defaultSettings.etaDeliveryMinutes,
     }
     setSettings(cleaned)
     saveSettings(cleaned)
@@ -331,6 +333,28 @@ function Admin() {
               value={settings.paymentMpLink || ''}
               onChange={(e) => updateSetting('paymentMpLink', e.target.value)}
               placeholder="https://..."
+            />
+          </label>
+
+          <h3 className="admin-subsection-title">Tiempos estimados de pedido</h3>
+          <label className="admin-field">
+            <span>Tiempo estimado para retiro en local (minutos)</span>
+            <input
+              type="number"
+              min="1"
+              step="1"
+              value={settings.etaPickupMinutes ?? 20}
+              onChange={(e) => updateSetting('etaPickupMinutes', e.target.value)}
+            />
+          </label>
+          <label className="admin-field">
+            <span>Tiempo estimado para envío a domicilio (minutos)</span>
+            <input
+              type="number"
+              min="1"
+              step="1"
+              value={settings.etaDeliveryMinutes ?? 40}
+              onChange={(e) => updateSetting('etaDeliveryMinutes', e.target.value)}
             />
           </label>
           <div className="admin-actions">

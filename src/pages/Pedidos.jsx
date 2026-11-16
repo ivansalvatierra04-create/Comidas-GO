@@ -61,13 +61,14 @@ function Pedidos() {
                   <span>Total</span>
                   <strong>{order.totalText || formatCurrency(order.total)}</strong>
                 </div>
-                {(order.customer?.name || order.payment?.methodLabel) && (
+                {(order.customer?.name || order.payment?.methodLabel || order.estimate?.label) && (
                   <div className="order-extra">
                     {order.customer?.name && <p><strong>Cliente:</strong> {order.customer.name} {order.customer.phone ? `(${order.customer.phone})` : ''}</p>}
                     {order.customer?.deliveryType && <p><strong>Entrega:</strong> {order.customer.deliveryType}</p>}
                     {order.customer?.address && <p><strong>Dirección:</strong> {order.customer.address}</p>}
                     {order.payment?.methodLabel && <p><strong>Pago:</strong> {order.payment.methodLabel}</p>}
                     {order.payment?.info && <p className="order-pay-info">{order.payment.info}</p>}
+                    {order.estimate?.label && <p className="order-eta"><strong>Tiempo estimado:</strong> {order.estimate.label}</p>}
                   </div>
                 )}
               </article>

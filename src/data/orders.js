@@ -47,6 +47,11 @@ export function createOrderFromCart(details = {}, cartSnapshot = null) {
       methodLabel: details.paymentMethodLabel || '',
       info: details.paymentInfo || '',
     },
+    estimate: {
+      minutes: details.etaMinutes ?? null,
+      at: details.etaAt || '',
+      label: details.etaLabel || '',
+    },
   }
   const orders = [order, ...getOrders()]
   saveOrders(orders)
@@ -79,6 +84,10 @@ export function buildOrderMessage(order, storeName = '') {
     lines.push('')
     lines.push(`*Forma de pago:* ${order.payment.methodLabel}`)
     if (order.payment.info) lines.push(order.payment.info)
+  }
+  if (order.estimate?.label || order.estimate?.at) {
+    lines.push('')
+    lines.push(`*Tiempo estimado:* ${order.estimate.label || new Date(order.estimate.at).toLocaleString('es-AR')}`)
   }
   return lines.join('\n')
 }

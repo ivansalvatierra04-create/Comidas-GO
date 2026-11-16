@@ -15,6 +15,8 @@ export const defaultSettings = {
   paymentCashInfo: 'Pago en efectivo al recibir/retirar.',
   paymentTransferInfo: '',
   paymentMpLink: '',
+  etaPickupMinutes: 20,
+  etaDeliveryMinutes: 40,
 }
 
 export function getSettings() {
@@ -39,6 +41,8 @@ export function getSettings() {
       paymentCashInfo: parsed.paymentCashInfo ?? defaultSettings.paymentCashInfo,
       paymentTransferInfo: parsed.paymentTransferInfo ?? '',
       paymentMpLink: parsed.paymentMpLink ?? '',
+      etaPickupMinutes: Number.isFinite(Number(parsed.etaPickupMinutes)) ? Math.max(1, Math.floor(Number(parsed.etaPickupMinutes))) : defaultSettings.etaPickupMinutes,
+      etaDeliveryMinutes: Number.isFinite(Number(parsed.etaDeliveryMinutes)) ? Math.max(1, Math.floor(Number(parsed.etaDeliveryMinutes))) : defaultSettings.etaDeliveryMinutes,
     }
   } catch {
     return defaultSettings

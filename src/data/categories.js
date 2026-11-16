@@ -1,7 +1,7 @@
 const STORAGE_KEY = 'comidasgo-categories'
 
-function createItem(id, name, description, price, image, discount = '') {
-  return { id, name, description, price, image, discount }
+function createItem(id, name, description, price, image, discount = '', stock = null) {
+  return { id, name, description, price, image, discount, stock }
 }
 
 export const defaultCategories = [
@@ -59,6 +59,13 @@ export const defaultCategories = [
   },
 ]
 
+function normalizeStock(value) {
+  if (value === '' || value === null || value === undefined) return null
+  const n = Number(value)
+  if (!Number.isFinite(n)) return null
+  return Math.max(0, Math.floor(n))
+}
+
 function normalizeItem(item, catId, index) {
   return {
     id: item?.id || `${catId}-${index + 1}`,
@@ -67,6 +74,7 @@ function normalizeItem(item, catId, index) {
     price: item?.price || '',
     image: item?.image || '',
     discount: item?.discount || '',
+    stock: normalizeStock(item?.stock),
   }
 }
 
@@ -97,6 +105,7 @@ export function getCategories() {
 
 export function saveCategories(categories) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(categories))
+  window.dispatchEvent(new Event('categories-updated'))
 }
 
 export function getCategoryById(id) {
@@ -108,4 +117,38 @@ export function getItemById(categoryId, itemId) {
   if (!category) return { category: null, item: null }
   const item = (category.items || []).find((it) => String(it.id) === String(itemId)) || null
   return { category, item }
+}
+
+export function getItemStock(item) {
+  if (!item) return null
+  const stock = item.stock
+  if (stock === '' || stock === null || stock === undefined) return null
+  const n = Number(stock)
+  return Number.isFinite(n) ? Math.max(0, Math.floor(n)) : null
+}
+
+export function getAvailableStock(categoryId, itemId) {
+  const { item } = getItemById(categoryId, itemId)
+  if (!item) return 0
+  return getItemStock(item)
+}
+
+export function decreaseStockForOrder(orderItems) {
+  if (!Array.isArray(orderItems) || orderItems.length === 0) return
+  const categories = getCategories().map((cat) => ({
+    ...cat,
+    items: (cat.items || []).map((item) => ({ ...item })),
+  }))
+  let changed = false
+  orderItems.forEach((orderItem) => {
+    const cat = categories.find((c) => String(c.id) === String(orderItem.categoryId))
+    if (!cat) return
+    const item = (cat.items || []).find((i) => String(i.id) === String(orderItem.itemId))
+    if (!item) return
+    const stock = getItemStock(item)
+    if (stock === null) return
+    item.stock = Math.max(0, stock - (Number(orderItem.quantity) || 0))
+    changed = true
+  })
+  if (changed) saveCategories(categories)
 }

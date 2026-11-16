@@ -22,15 +22,17 @@ export function saveOrders(orders) {
   window.dispatchEvent(new Event('orders-updated'))
 }
 
-export function createOrderFromCart(details = {}) {
-  const cart = getCart()
-  if (!cart.items.length) return null
-  const total = getCartTotal()
+export function createOrderFromCart(details = {}, cartSnapshot = null) {
+  const sourceItems = Array.isArray(cartSnapshot?.items) ? cartSnapshot.items : getCart().items
+  if (!sourceItems.length) return null
+  const total = Array.isArray(cartSnapshot?.items)
+    ? sourceItems.reduce((sum, item) => sum + (Number(item.priceValue) || 0) * (Number(item.quantity) || 0), 0)
+    : getCartTotal()
   const order = {
     id: createId(),
     createdAt: new Date().toISOString(),
     status: 'Pendiente',
-    items: cart.items.map((item) => ({ ...item })),
+    items: sourceItems.map((item) => ({ ...item })),
     total,
     totalText: formatCurrency(total),
     customer: {

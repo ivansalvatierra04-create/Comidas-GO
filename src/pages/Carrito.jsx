@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import FooterNav from '../components/FooterNav.jsx'
 import Header from '../components/Header.jsx'
 import { formatCurrency, getCart, getCartTotal, removeFromCart, updateCartItemQuantity } from '../data/cart.js'
+import { decreaseStockForOrder, getItemById, getItemStock } from '../data/categories.js'
 import { buildOrderMessage, createOrderFromCart } from '../data/orders.js'
 import { getSettings } from '../data/settings.js'
 
@@ -63,6 +64,20 @@ function Carrito() {
       return
     }
 
+    for (const item of cart.items) {
+      const { item: liveItem } = getItemById(item.categoryId, item.itemId)
+      if (!liveItem) {
+        setError(`El producto "${item.name}" ya no está disponible.`)
+        return
+      }
+      const stock = getItemStock(liveItem)
+      if (stock !== null && item.quantity > stock) {
+        setError(`No hay stock suficiente de "${item.name}". Disponible: ${stock}.`)
+        return
+      }
+    }
+
+    const snapshotItems = getCart().items.map((i) => ({ ...i }))
     const order = createOrderFromCart({
       customerName: customerName.trim(),
       customerPhone: customerPhone.trim(),
@@ -72,9 +87,12 @@ function Carrito() {
       paymentMethod,
       paymentMethodLabel: selectedPayment.label,
       paymentInfo: selectedPayment.info,
-    })
+    }, { items: snapshotItems })
 
-    if (order) setConfirmedOrder(order)
+    if (order) {
+      decreaseStockForOrder(snapshotItems)
+      setConfirmedOrder(order)
+    }
   }
 
   if (confirmedOrder) {
@@ -145,7 +163,12 @@ function Carrito() {
         ) : (
           <>
             <section className="cart-list">
-              {cart.items.map((item) => (
+              {cart.items.map((item) => {
+                const { item: liveItem } = getItemById(item.categoryId, item.itemId)
+                const stock = liveItem ? getItemStock(liveItem) : 0
+                const out = stock !== null && stock <= 0
+                const over = stock !== null && item.quantity > stock
+                return (
                 <article key={`${item.categoryId}-${item.itemId}`} className="cart-item">
                   {item.image ? (
                     <img src={item.image} alt={item.name} className="cart-item-image" />
@@ -158,17 +181,19 @@ function Carrito() {
                       {item.discount && <span className="promo-badge">{item.discount}</span>}
                     </div>
                     <p className="cart-item-price">{item.price || formatCurrency(item.priceValue)}</p>
+                    {stock !== null && <p className={`menu-item-stock ${out || over ? 'out' : ''}`}>{out ? 'Sin stock' : `Disponible: ${stock}`}</p>}
+                    {over && <p className="checkout-error">Ajustá la cantidad: solo hay {stock} disponible(s).</p>}
                     <div className="cart-item-actions">
                       <div className="qty-control">
-                        <button type="button" onClick={() => updateCartItemQuantity(item.itemId, item.categoryId, item.quantity - 1)}>-</button>
+                        <button type="button" onClick={() => updateCartItemQuantity(item.itemId, item.categoryId, item.quantity - 1, stock)}>-</button>
                         <span>{item.quantity}</span>
-                        <button type="button" onClick={() => updateCartItemQuantity(item.itemId, item.categoryId, item.quantity + 1)}>+</button>
+                        <button type="button" onClick={() => updateCartItemQuantity(item.itemId, item.categoryId, item.quantity + 1, stock)} disabled={stock !== null && item.quantity >= stock}>+</button>
                       </div>
                       <button type="button" className="cart-remove" onClick={() => removeFromCart(item.itemId, item.categoryId)}>Quitar</button>
                     </div>
                   </div>
                 </article>
-              ))}
+              )})}
             </section>
 
             <section className="checkout-form">

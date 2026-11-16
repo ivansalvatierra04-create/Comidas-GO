@@ -42,7 +42,7 @@ function Admin() {
         cat.id === categoryId
           ? {
               ...cat,
-              items: [...(cat.items || []), { id: createId(), name: 'Nueva comida', description: '', price: '', image: '', discount: '' }],
+              items: [...(cat.items || []), { id: createId(), name: 'Nueva comida', description: '', price: '', image: '', discount: '', stock: '' }],
             }
           : cat,
       ),
@@ -129,18 +129,24 @@ function Admin() {
       name: cat.name?.trim() || 'Sin nombre',
       icon: cat.icon?.trim() || '🍽️',
       image: cat.image?.trim() || '',
-      items: (cat.items || []).map((item, itemIndex) => ({
-        id: item.id || `${cat.id || index + 1}-${itemIndex + 1}`,
-        name: item.name?.trim() || 'Sin nombre',
-        description: item.description?.trim() || '',
-        price: item.price?.trim() || '',
-        image: item.image?.trim() || '',
-        discount: item.discount?.trim() || '',
-      })),
+      items: (cat.items || []).map((item, itemIndex) => {
+        const rawStock = item.stock
+        const stock = rawStock === '' || rawStock === null || rawStock === undefined || Number.isNaN(Number(rawStock))
+          ? null
+          : Math.max(0, Math.floor(Number(rawStock)))
+        return {
+          id: item.id || `${cat.id || index + 1}-${itemIndex + 1}`,
+          name: item.name?.trim() || 'Sin nombre',
+          description: item.description?.trim() || '',
+          price: item.price?.trim() || '',
+          image: item.image?.trim() || '',
+          discount: item.discount?.trim() || '',
+          stock,
+        }
+      }),
     }))
     setCategories(cleaned)
     saveCategories(cleaned)
-    window.dispatchEvent(new Event('categories-updated'))
     showMessage('Categorías y comidas guardadas')
   }
 
@@ -377,6 +383,17 @@ function Admin() {
                   <label className="admin-field">
                     <span>Precio</span>
                     <input type="text" value={item.price || ''} onChange={(e) => updateItem(cat.id, item.id, 'price', e.target.value)} placeholder="Ej: $8.500" />
+                  </label>
+                  <label className="admin-field">
+                    <span>Stock disponible (vacío = sin límite)</span>
+                    <input
+                      type="number"
+                      min="0"
+                      step="1"
+                      value={item.stock ?? ''}
+                      onChange={(e) => updateItem(cat.id, item.id, 'stock', e.target.value)}
+                      placeholder="Ej: 10"
+                    />
                   </label>
                   <label className="admin-field">
                     <span>Descuento (opcional)</span>

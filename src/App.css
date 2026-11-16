@@ -1822,3 +1822,25 @@
   color: #d62300;
   transform: scale(0.95);
 }
+
+.stock-label,
+.menu-item-stock {
+  margin: 2px 0 0;
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: #1f7a3a;
+}
+
+.stock-label.out,
+.menu-item-stock.out {
+  color: #a11b1b;
+}
+
+.add-cart-button:disabled,
+.qty-control button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  filter: none;
+  box-shadow: none;
+}

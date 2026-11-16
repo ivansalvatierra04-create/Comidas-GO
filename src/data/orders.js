@@ -28,13 +28,25 @@ export function createOrderFromCart(details = {}, cartSnapshot = null) {
   const total = Array.isArray(cartSnapshot?.items)
     ? sourceItems.reduce((sum, item) => sum + (Number(item.priceValue) || 0) * (Number(item.quantity) || 0), 0)
     : getCartTotal()
+  const discount = Math.max(0, Number(details.discountAmount) || 0)
+  const finalTotal = Math.max(0, Number(details.finalTotal ?? (total - discount)) || 0)
   const order = {
     id: createId(),
     createdAt: new Date().toISOString(),
     status: 'Pendiente',
     items: sourceItems.map((item) => ({ ...item })),
-    total,
-    totalText: formatCurrency(total),
+    subtotal: total,
+    subtotalText: formatCurrency(total),
+    discount: discount,
+    discountText: formatCurrency(discount),
+    total: finalTotal,
+    totalText: formatCurrency(finalTotal),
+    coupon: details.coupon ? {
+      code: details.coupon.code || '',
+      title: details.coupon.title || '',
+      type: details.coupon.type || '',
+      value: details.coupon.value || 0,
+    } : null,
     customer: {
       name: details.customerName || '',
       phone: details.customerPhone || '',
@@ -70,6 +82,10 @@ export function buildOrderMessage(order, storeName = '') {
     lines.push(`- ${item.quantity} x ${item.name} (${item.price || formatCurrency(item.priceValue)})`)
   })
   lines.push('')
+  if (order.discount > 0) {
+    lines.push(`*Subtotal:* ${order.subtotalText || formatCurrency(order.subtotal || order.total)}`)
+    lines.push(`*Cupón${order.coupon?.code ? ` (${order.coupon.code})` : ''}:* -${order.discountText || formatCurrency(order.discount)}`)
+  }
   lines.push(`*Total:* ${order.totalText || formatCurrency(order.total)}`)
   if (order.customer?.name || order.customer?.phone || order.customer?.address || order.customer?.deliveryType) {
     lines.push('')

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { getCategories, saveCategories, defaultCategories } from '../data/categories.js'
+import { getCoupons, normalizeCoupon, saveCoupons, defaultCoupons } from '../data/coupons.js'
 import { getPromotions, savePromotions, defaultPromotions } from '../data/promotions.js'
 import { getSlides, saveSlides, defaultSlides } from '../data/slides.js'
 import { getSettings, saveSettings, defaultSettings } from '../data/settings.js'
@@ -20,6 +21,7 @@ function Admin() {
   const [slides, setSlides] = useState(() => getSlides())
   const [categories, setCategories] = useState(() => getCategories())
   const [promotions, setPromotions] = useState(() => getPromotions())
+  const [coupons, setCoupons] = useState(() => getCoupons().map(normalizeCoupon))
   const [settings, setSettings] = useState(() => getSettings())
   const [message, setMessage] = useState('')
 
@@ -76,6 +78,10 @@ function Admin() {
     setPromotions((current) => current.map((promo) => (promo.id === id ? { ...promo, [field]: value } : promo)))
   }
 
+  const updateCoupon = (id, field, value) => {
+    setCoupons((current) => current.map((c) => (c.id === id ? { ...c, [field]: value } : c)))
+  }
+
   const updateSetting = (field, value) => {
     setSettings((current) => ({ ...current, [field]: value }))
   }
@@ -102,6 +108,14 @@ function Admin() {
 
   const removePromotion = (id) => {
     setPromotions((current) => current.filter((promo) => promo.id !== id))
+  }
+
+  const addCoupon = () => {
+    setCoupons((current) => [...current, { id: createId(), code: '', title: 'Nuevo cupón', description: '', type: 'percent', value: 10, active: true }])
+  }
+
+  const removeCoupon = (id) => {
+    setCoupons((current) => current.filter((c) => c.id !== id))
   }
 
   const handleSaveSlides = () => {
@@ -176,6 +190,29 @@ function Admin() {
     savePromotions(defaultPromotions)
     window.dispatchEvent(new Event('promotions-updated'))
     showMessage('Promociones restauradas')
+  }
+
+  const handleSaveCoupons = () => {
+    const cleaned = coupons.map((c, index) => normalizeCoupon({
+      ...c,
+      id: c.id || String(index + 1),
+      code: String(c.code || '').trim().toUpperCase(),
+      title: String(c.title || '').trim() || 'Cupón',
+      description: String(c.description || '').trim(),
+      type: c.type === 'fixed' ? 'fixed' : 'percent',
+      value: Math.max(0, Number(c.value) || 0),
+      active: !!c.active,
+    }, index)).filter((c) => c.code)
+    setCoupons(cleaned)
+    saveCoupons(cleaned)
+    showMessage('Cupones guardados')
+  }
+
+  const handleResetCoupons = () => {
+    const reset = defaultCoupons.map(normalizeCoupon)
+    setCoupons(reset)
+    saveCoupons(reset)
+    showMessage('Cupones restaurados')
   }
 
   const handleSaveSettings = () => {
@@ -478,6 +515,48 @@ function Admin() {
           <button type="button" className="admin-secondary" onClick={addPromotion}>Agregar promoción</button>
           <button type="button" className="admin-secondary" onClick={handleResetPromotions}>Restaurar promociones</button>
           <button type="button" className="admin-primary" onClick={handleSavePromotions}>Guardar promociones</button>
+        </div>
+
+        <h2 className="admin-section-title standalone">Cupones (beneficios)</h2>
+        {coupons.map((coupon) => (
+          <section key={coupon.id} className="admin-card">
+            <div className="admin-card-head">
+              <h2>{coupon.title || 'Cupón'}</h2>
+              <button type="button" className="admin-danger" onClick={() => removeCoupon(coupon.id)}>Eliminar</button>
+            </div>
+            <label className="admin-field">
+              <span>Código (único, ej: BIENVENIDO10)</span>
+              <input type="text" value={coupon.code || ''} onChange={(e) => updateCoupon(coupon.id, 'code', e.target.value.toUpperCase())} placeholder="CODIGO" />
+            </label>
+            <label className="admin-field">
+              <span>Título</span>
+              <input type="text" value={coupon.title || ''} onChange={(e) => updateCoupon(coupon.id, 'title', e.target.value)} placeholder="Ej: 10% en tu compra" />
+            </label>
+            <label className="admin-field">
+              <span>Descripción</span>
+              <input type="text" value={coupon.description || ''} onChange={(e) => updateCoupon(coupon.id, 'description', e.target.value)} placeholder="Condiciones o detalle" />
+            </label>
+            <label className="admin-field">
+              <span>Tipo de descuento</span>
+              <select className="checkout-select" value={coupon.type || 'percent'} onChange={(e) => updateCoupon(coupon.id, 'type', e.target.value)}>
+                <option value="percent">Porcentaje (%)</option>
+                <option value="fixed">Monto fijo ($)</option>
+              </select>
+            </label>
+            <label className="admin-field">
+              <span>Valor ({coupon.type === 'fixed' ? 'monto' : 'porcentaje'})</span>
+              <input type="number" min="0" step="1" value={coupon.value ?? 0} onChange={(e) => updateCoupon(coupon.id, 'value', e.target.value)} />
+            </label>
+            <label className="admin-check">
+              <input type="checkbox" checked={coupon.active !== false} onChange={(e) => updateCoupon(coupon.id, 'active', e.target.checked)} />
+              <span>Cupón activo (visible para clientes logueados)</span>
+            </label>
+          </section>
+        ))}
+        <div className="admin-actions">
+          <button type="button" className="admin-secondary" onClick={addCoupon}>Agregar cupón</button>
+          <button type="button" className="admin-secondary" onClick={handleResetCoupons}>Restaurar cupones</button>
+          <button type="button" className="admin-primary" onClick={handleSaveCoupons}>Guardar cupones</button>
         </div>
 
         <h2 className="admin-section-title standalone">Carrusel</h2>

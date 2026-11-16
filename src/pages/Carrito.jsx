@@ -2,8 +2,10 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import FooterNav from '../components/FooterNav.jsx'
 import Header from '../components/Header.jsx'
-import { formatCurrency, getCart, getCartTotal, removeFromCart, updateCartItemQuantity } from '../data/cart.js'
+import { getCurrentUser } from '../data/auth.js'
+import { formatCurrency, getCart, getCartTotal, removeFromCart, setCartCoupon, updateCartItemQuantity } from '../data/cart.js'
 import { decreaseStockForOrder, getItemById, getItemStock } from '../data/categories.js'
+import { calculateDiscount, findCouponByCode } from '../data/coupons.js'
 import { buildOrderMessage, createOrderFromCart } from '../data/orders.js'
 import { getSettings } from '../data/settings.js'
 
@@ -14,31 +16,47 @@ function sanitizeWhatsApp(phone) {
 function Carrito() {
   const [cart, setCart] = useState(() => getCart())
   const [settings, setSettings] = useState(() => getSettings())
+  const [user, setUser] = useState(() => getCurrentUser())
   const [customerName, setCustomerName] = useState('')
   const [customerPhone, setCustomerPhone] = useState('')
   const [deliveryType, setDeliveryType] = useState('Retiro en local')
   const [address, setAddress] = useState('')
   const [notes, setNotes] = useState('')
   const [paymentMethod, setPaymentMethod] = useState('efectivo')
+  const [couponInput, setCouponInput] = useState('')
+  const [couponMsg, setCouponMsg] = useState('')
   const [error, setError] = useState('')
   const [confirmedOrder, setConfirmedOrder] = useState(null)
 
   useEffect(() => {
     const sync = () => setCart(getCart())
     const syncSettings = () => setSettings(getSettings())
+    const syncAuth = () => setUser(getCurrentUser())
     window.addEventListener('storage', sync)
     window.addEventListener('cart-updated', sync)
     window.addEventListener('storage', syncSettings)
     window.addEventListener('settings-updated', syncSettings)
+    window.addEventListener('storage', syncAuth)
+    window.addEventListener('auth-updated', syncAuth)
     return () => {
       window.removeEventListener('storage', sync)
       window.removeEventListener('cart-updated', sync)
       window.removeEventListener('storage', syncSettings)
       window.removeEventListener('settings-updated', syncSettings)
+      window.removeEventListener('storage', syncAuth)
+      window.removeEventListener('auth-updated', syncAuth)
     }
   }, [])
 
-  const total = getCartTotal()
+  useEffect(() => {
+    if (user && !customerName && user.name) setCustomerName(user.name)
+    if (user && !customerPhone && user.phone) setCustomerPhone(user.phone)
+  }, [user])
+
+  const subtotal = getCartTotal()
+  const appliedCoupon = user && cart.couponCode ? findCouponByCode(cart.couponCode) : null
+  const discount = appliedCoupon ? calculateDiscount(subtotal, appliedCoupon) : 0
+  const total = Math.max(0, subtotal - discount)
 
   const paymentOptions = useMemo(() => ({
     efectivo: { label: 'Efectivo', info: settings.paymentCashInfo || 'Pago en efectivo.' },
@@ -98,6 +116,9 @@ function Carrito() {
       etaMinutes,
       etaAt: etaAtDate.toISOString(),
       etaLabel,
+      discountAmount: discount,
+      finalTotal: total,
+      coupon: appliedCoupon ? { code: appliedCoupon.code, title: appliedCoupon.title, type: appliedCoupon.type, value: appliedCoupon.value } : null,
     }, { items: snapshotItems })
 
     if (order) {
@@ -131,6 +152,12 @@ function Carrito() {
                 </div>
               ))}
               <hr />
+              {confirmedOrder.discount > 0 && (
+                <>
+                  <div className="ticket-line"><span>Subtotal</span><span>{confirmedOrder.subtotalText}</span></div>
+                  <div className="ticket-line"><span>Cupón{confirmedOrder.coupon?.code ? ` (${confirmedOrder.coupon.code})` : ''}</span><span>-{confirmedOrder.discountText}</span></div>
+                </>
+              )}
               <div className="ticket-line total"><span>Total</span><strong>{confirmedOrder.totalText}</strong></div>
               <hr />
               <p><strong>Cliente:</strong> {confirmedOrder.customer.name} ({confirmedOrder.customer.phone})</p>
@@ -259,10 +286,51 @@ function Carrito() {
             </section>
 
             <section className="cart-summary">
-              <div className="cart-total-row">
-                <span>Total</span>
-                <strong>{formatCurrency(total)}</strong>
+              <div className="coupon-box">
+                <h2>Cupón</h2>
+                {!user ? (
+                  <p className="muted-text">Iniciá sesión en <Link to="/cuenta">Mi cuenta</Link> para aplicar cupones.</p>
+                ) : (
+                  <>
+                    <div className="coupon-apply-row">
+                      <input
+                        type="text"
+                        value={couponInput || cart.couponCode || ''}
+                        onChange={(e) => { setCouponInput(e.target.value.toUpperCase()); setCouponMsg('') }}
+                        placeholder="Código de cupón"
+                      />
+                      <button
+                        type="button"
+                        className="admin-secondary"
+                        onClick={() => {
+                          const code = String(couponInput || cart.couponCode || '').trim().toUpperCase()
+                          const found = findCouponByCode(code)
+                          if (!found) {
+                            setCartCoupon('')
+                            setCouponMsg('Cupón no válido o no disponible.')
+                            return
+                          }
+                          setCartCoupon(found.code)
+                          setCouponInput(found.code)
+                          setCouponMsg(`Cupón "${found.code}" aplicado.`)
+                        }}
+                      >Aplicar</button>
+                    </div>
+                    {appliedCoupon && (
+                      <div className="coupon-applied">
+                        <p><strong>{appliedCoupon.code}</strong> - {appliedCoupon.title}</p>
+                        <button type="button" className="cart-remove" onClick={() => { setCartCoupon(''); setCouponInput(''); setCouponMsg('Cupón quitado.') }}>Quitar cupón</button>
+                      </div>
+                    )}
+                    {!appliedCoupon && cart.couponCode && <p className="checkout-error">El cupón guardado ya no está disponible.</p>}
+                    {couponMsg && <p className={couponMsg.includes('aplicado') ? 'added-msg' : 'checkout-error'}>{couponMsg}</p>}
+                  </>
+                )}
               </div>
+
+              <div className="cart-total-row"><span>Subtotal</span><strong>{formatCurrency(subtotal)}</strong></div>
+              {discount > 0 && <div className="cart-total-row discount"><span>Descuento cupón</span><strong>-{formatCurrency(discount)}</strong></div>}
+              <div className="cart-total-row total-final"><span>Total</span><strong>{formatCurrency(total)}</strong></div>
               {error && <p className="checkout-error">{error}</p>}
               <div className="cart-summary-actions">
                 <Link to="/categorias" className="admin-secondary cart-link-btn">Seguir comprando</Link>

@@ -57,11 +57,16 @@ function Pedidos() {
                     </li>
                   ))}
                 </ul>
-                <div className="order-total">
-                  <span>Total</span>
-                  <strong>{order.totalText || formatCurrency(order.total)}</strong>
+                <div className="order-total-block">
+                  {order.discount > 0 && (
+                    <>
+                      <div className="order-total sub"><span>Subtotal</span><span>{order.subtotalText || formatCurrency(order.subtotal || 0)}</span></div>
+                      <div className="order-total sub"><span>Cupón{order.coupon?.code ? ` (${order.coupon.code})` : ''}</span><span>-{order.discountText || formatCurrency(order.discount)}</span></div>
+                    </>
+                  )}
+                  <div className="order-total"><span>Total</span><strong>{order.totalText || formatCurrency(order.total)}</strong></div>
                 </div>
-                {(order.customer?.name || order.payment?.methodLabel || order.estimate?.label) && (
+                {(order.customer?.name || order.payment?.methodLabel || order.estimate?.label || order.coupon?.code) && (
                   <div className="order-extra">
                     {order.customer?.name && <p><strong>Cliente:</strong> {order.customer.name} {order.customer.phone ? `(${order.customer.phone})` : ''}</p>}
                     {order.customer?.deliveryType && <p><strong>Entrega:</strong> {order.customer.deliveryType}</p>}

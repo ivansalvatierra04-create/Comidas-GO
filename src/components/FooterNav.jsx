@@ -20,6 +20,24 @@ function OrdersIcon() {
   )
 }
 
+function AccountIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="12" cy="8" r="4" />
+      <path d="M4 20a8 8 0 0 1 16 0" />
+    </svg>
+  )
+}
+
+function CouponIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M3 7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4V7z" />
+      <path d="M9 8v8M15 8v8" />
+    </svg>
+  )
+}
+
 function FooterNav() {
   return (
     <nav className="footer-nav" aria-label="Navegación inferior">
@@ -30,6 +48,14 @@ function FooterNav() {
       <NavLink to="/pedidos" className={({ isActive }) => `footer-link ${isActive ? 'active' : ''}`}>
         <OrdersIcon />
         <span>Mis pedidos</span>
+      </NavLink>
+      <NavLink to="/cuenta" className={({ isActive }) => `footer-link ${isActive ? 'active' : ''}`}>
+        <AccountIcon />
+        <span>Mi cuenta</span>
+      </NavLink>
+      <NavLink to="/cupones" className={({ isActive }) => `footer-link ${isActive ? 'active' : ''}`}>
+        <CouponIcon />
+        <span>Cupones</span>
       </NavLink>
     </nav>
   )

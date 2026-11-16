@@ -4,6 +4,8 @@ import Carrito from './pages/Carrito.jsx'
 import CategoriaMenu from './pages/CategoriaMenu.jsx'
 import Categorias from './pages/Categorias.jsx'
 import ComidaDetalle from './pages/ComidaDetalle.jsx'
+import Cuenta from './pages/Cuenta.jsx'
+import Cupones from './pages/Cupones.jsx'
 import Home from './pages/Home.jsx'
 import Pedidos from './pages/Pedidos.jsx'
 import Principal from './pages/Principal.jsx'
@@ -19,6 +21,8 @@ function App() {
       <Route path="/categoria/:categoryId/comida/:itemId" element={<ComidaDetalle />} />
       <Route path="/carrito" element={<Carrito />} />
       <Route path="/pedidos" element={<Pedidos />} />
+      <Route path="/cuenta" element={<Cuenta />} />
+      <Route path="/cupones" element={<Cupones />} />
       <Route path="/admin" element={<Admin />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

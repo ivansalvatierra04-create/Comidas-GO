@@ -15,18 +15,19 @@ export function formatCurrency(value) {
 export function getCart() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
-    if (!raw) return { items: [] }
+    if (!raw) return { items: [], couponCode: '' }
     const parsed = JSON.parse(raw)
-    if (!parsed || !Array.isArray(parsed.items)) return { items: [] }
+    if (!parsed || !Array.isArray(parsed.items)) return { items: [], couponCode: '' }
     return {
       items: parsed.items.map((item) => ({
         ...item,
         quantity: Math.max(1, Number(item.quantity) || 1),
         priceValue: Number(item.priceValue) || parsePriceValue(item.price),
       })),
+      couponCode: String(parsed.couponCode || '').trim().toUpperCase(),
     }
   } catch {
-    return { items: [] }
+    return { items: [], couponCode: '' }
   }
 }
 
@@ -100,6 +101,13 @@ export function removeFromCart(itemId, categoryId) {
   return cart
 }
 
+export function setCartCoupon(code) {
+  const cart = getCart()
+  cart.couponCode = String(code || '').trim().toUpperCase()
+  saveCart(cart)
+  return cart
+}
+
 export function clearCart() {
-  saveCart({ items: [] })
+  saveCart({ items: [], couponCode: '' })
 }

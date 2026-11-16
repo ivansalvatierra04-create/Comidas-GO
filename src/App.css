@@ -1855,3 +1855,95 @@
   filter: none;
   box-shadow: none;
 }
+
+.mods-section {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 2px dashed #eadfc7;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.mods-section h3 { margin: 0; font-size: 1rem; font-weight: 900; color: #2b1d12; }
+.mods-list { display: flex; flex-direction: column; gap: 8px; }
+.mod-option {
+  display: flex; align-items: center; gap: 10px; padding: 8px 10px;
+  border: 2px solid #eadfc7; border-radius: 12px; background: #fffdf8;
+  font-weight: 700; color: #2b1d12;
+}
+.mod-option input { accent-color: #d62300; }
+.mod-price { margin-left: auto; color: #d62300; font-weight: 900; font-size: 0.92rem; }
+.price-base-note { font-size: 0.85rem; color: #6b5a4b; font-weight: 700; }
+.cart-mods, .order-item-mods, .ticket-item-block { display: flex; flex-direction: column; gap: 2px; }
+.cart-mod, .ticket-mod, .order-item-mods span { margin: 0; font-size: 0.88rem; color: #4f3f33; font-weight: 600; }
+.cart-mod.remove { color: #a11b1b; }
+.order-item-line { flex-direction: column; align-items: stretch; }
+.order-item-main { display: flex; justify-content: space-between; gap: 10px; width: 100%; }
+.ticket-item-block .ticket-line { margin: 0; }
+.ticket-mod { padding-left: 6px; }
+.admin-mods { margin-top: 8px; padding-top: 8px; border-top: 2px dashed #eadfc7; display: flex; flex-direction: column; gap: 8px; }
+.admin-mod-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.admin-mod-row input[type="text"] { flex: 1; min-width: 140px; padding: 8px 10px; border-radius: 10px; border: 2px solid #eadfc7; font: inherit; }
+.admin-mod-row input[type="number"] { width: 110px; padding: 8px 10px; border-radius: 10px; border: 2px solid #eadfc7; font: inherit; }
+
+.mods-section.compact { margin-top: 6px; padding-top: 6px; }
+.mods-section.compact h4 { margin: 0 0 4px; font-size: 0.92rem; font-weight: 900; color: #2b1d12; }
+.cart-edit-wrap { margin-top: 8px; display: flex; flex-direction: column; gap: 6px; }
+.edit-mods-btn {
+  align-self: flex-start; border: 2px solid #ffc72c; background: #fff7e0; color: #5a1200;
+  border-radius: 10px; padding: 6px 10px; font: inherit; font-weight: 800; cursor: pointer;
+}
+.cart-edit-mods { display: flex; flex-direction: column; gap: 8px; }
+
+.caja-summary-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+@media (min-width: 640px) { .caja-summary-grid { grid-template-columns: 1fr 1fr; } }
+.caja-card {
+  background: #ffffff; border: 2px solid #f0e4cc; border-radius: 20px; padding: 16px;
+  box-shadow: 0 6px 0 #e6dcc8; display: flex; flex-direction: column; gap: 10px;
+}
+.caja-card h2 { margin: 0; font-size: 1.1rem; font-weight: 900; color: #2b1d12; }
+.caja-line { margin: 0; display: flex; justify-content: space-between; gap: 10px; font-weight: 700; color: #4f3f33; }
+.caja-line.income strong { color: #1f7a3a; }
+.caja-line.expense strong { color: #a11b1b; }
+.caja-line.balance { border-top: 2px dashed #eadfc7; padding-top: 8px; font-size: 1.05rem; color: #2b1d12; }
+.caja-form, .caja-movements { display: flex; flex-direction: column; gap: 10px; }
+.caja-type-row { display: flex; gap: 8px; }
+.caja-type-row .admin-secondary { flex: 1; }
+.active-toggle { background: #ffc72c !important; color: #5a1200 !important; }
+.caja-move { border: 2px solid #eadfc7; border-radius: 14px; padding: 12px; background: #fffdf8; display: flex; flex-direction: column; gap: 6px; }
+.caja-move.income { border-left: 6px solid #1f7a3a; }
+.caja-move.expense { border-left: 6px solid #a11b1b; }
+.caja-move-main { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
+.caja-move-concept { margin: 0; font-weight: 900; color: #2b1d12; }
+.caja-move-meta, .caja-move-note { margin: 2px 0 0; color: #6b5a4b; font-weight: 600; font-size: 0.9rem; }
+.caja-move-amount { font-weight: 900; font-size: 1.05rem; white-space: nowrap; }
+.caja-move.income .caja-move-amount { color: #1f7a3a; }
+.caja-move.expense .caja-move-amount { color: #a11b1b; }
+.caja-movements-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.caja-movements-head h2 { margin: 0; }
+.caja-move-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.caja-ticket-dup { margin-top: 8px; padding: 12px; border: 2px dashed #eadfc7; border-radius: 12px; background: #fff; display: flex; flex-direction: column; gap: 6px; }
+.caja-ticket-dup h3 { margin: 0 0 4px; font-size: 1rem; font-weight: 900; color: #2b1d12; }
+.caja-ticket-dup p { margin: 0; font-weight: 600; color: #4f3f33; }
+.caja-ticket-dup hr { border: none; border-top: 2px dashed #eadfc7; margin: 4px 0; }
+
+.home-back {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  background: rgba(0,0,0,0.25);
+  color: #fff7e0;
+  border: 2px solid rgba(255,247,224,0.5);
+  border-radius: 10px;
+  padding: 6px 10px;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+.home-hero { position: relative; }
+.page-back-row { margin-bottom: 4px; }
+.back-link.as-button { background: none; border: none; padding: 0; cursor: pointer; text-align: left; font: inherit; }
+
+.home.with-footer-nav { padding-bottom: 90px; box-sizing: border-box; }
+.home-wrap { min-height: 100dvh; }
+.admin-content.with-footer-nav { padding-bottom: 110px; }

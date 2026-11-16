@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import Admin from './pages/Admin.jsx'
+import Caja from './pages/Caja.jsx'
 import Carrito from './pages/Carrito.jsx'
 import CategoriaMenu from './pages/CategoriaMenu.jsx'
 import Categorias from './pages/Categorias.jsx'
@@ -19,6 +20,7 @@ function App() {
       <Route path="/categoria/:categoryId/comida/:itemId" element={<ComidaDetalle />} />
       <Route path="/carrito" element={<Carrito />} />
       <Route path="/pedidos" element={<Pedidos />} />
+      <Route path="/caja" element={<Caja />} />
       <Route path="/admin" element={<Admin />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

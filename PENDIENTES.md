@@ -11,3 +11,6 @@ Lista de mejoras/tareas a realizar más adelante.
 ## Backend / ventas (futuro)
 - [ ] Agregar backend/base de datos para centralizar pedidos y que el dueño pueda ver el total de ventas y pedidos del día desde su dispositivo.
 - [ ] Sincronizar stock y estados de pedido entre dispositivos cuando exista backend.
+
+## Multi-comercio / arquitectura
+- [ ] **Aislamiento de datos entre comercios**: separar la información (configuración, catálogo, pedidos, clientes/cuentas, cupones, stock, etc.) por comercio/tenant para evitar mezcla de datos y permitir operar múltiples locales de forma independiente (especialmente al pasar a backend/multiusuario).

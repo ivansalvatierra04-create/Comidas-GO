@@ -30,6 +30,7 @@ function Pedidos() {
       <Header />
       <main className="principal-content with-footer">
         <div className="menu-page-header">
+          <button type="button" className="back-link as-button" onClick={() => window.history.back()}>← Volver</button>
           <h1>Mis pedidos</h1>
           <p>Historial de pedidos confirmados.</p>
         </div>
@@ -51,9 +52,17 @@ function Pedidos() {
                 </div>
                 <ul className="order-items">
                   {order.items.map((item, i) => (
-                    <li key={`${order.id}-${item.itemId}-${i}`}>
-                      <span>{item.quantity} x {item.name}</span>
-                      <span>{item.price || formatCurrency((item.priceValue || 0) * (item.quantity || 1))}</span>
+                    <li key={`${order.id}-${item.lineId || item.itemId}-${i}`} className="order-item-line">
+                      <div className="order-item-main">
+                        <span>{item.quantity} x {item.name}</span>
+                        <span>{item.price || formatCurrency((item.priceValue || 0) * (item.quantity || 1))}</span>
+                      </div>
+                      {(item.modifiers?.extras?.length > 0 || item.modifiers?.removed?.length > 0) && (
+                        <div className="order-item-mods">
+                          {item.modifiers?.extras?.length > 0 && <span>+ {item.modifiers.extras.map((e) => e.name).join(', ')}</span>}
+                          {item.modifiers?.removed?.length > 0 && <span>Sin: {item.modifiers.removed.map((r) => r.name).join(', ')}</span>}
+                        </div>
+                      )}
                     </li>
                   ))}
                 </ul>

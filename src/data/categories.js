@@ -1,7 +1,7 @@
 const STORAGE_KEY = 'comidasgo-categories'
 
-function createItem(id, name, description, price, image, discount = '', stock = null) {
-  return { id, name, description, price, image, discount, stock }
+function createItem(id, name, description, price, image, discount = '', stock = null, extras = [], removables = []) {
+  return { id, name, description, price, image, discount, stock, extras, removables }
 }
 
 export const defaultCategories = [
@@ -11,9 +11,18 @@ export const defaultCategories = [
     icon: '🍕',
     image: '',
     items: [
-      createItem('1-1', 'Pizza Muzzarella', 'Salsa de tomate, muzzarella y orégano.', '$8.500', 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=1200&q=80'),
-      createItem('1-2', 'Pizza Napolitana', 'Muzzarella, tomate en rodajas y ajo.', '$9.200', 'https://images.unsplash.com/photo-1574071318508-1cdbab80d002?auto=format&fit=crop&w=1200&q=80', '10% OFF'),
-      createItem('1-3', 'Pizza Pepperoni', 'Muzzarella y pepperoni crocante.', '$9.800', 'https://images.unsplash.com/photo-1628840042765-356cda07504e?auto=format&fit=crop&w=1200&q=80'),
+      createItem('1-1', 'Pizza Muzzarella', 'Salsa de tomate, muzzarella y orégano.', '$8.500', 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=1200&q=80', '', null,
+        [{ id: '1-1-ex-1', name: 'Queso extra', price: 800 }, { id: '1-1-ex-2', name: 'Aceitunas', price: 500 }],
+        [{ id: '1-1-rm-1', name: 'Orégano' }, { id: '1-1-rm-2', name: 'Salsa de tomate' }]
+      ),
+      createItem('1-2', 'Pizza Napolitana', 'Muzzarella, tomate en rodajas y ajo.', '$9.200', 'https://images.unsplash.com/photo-1574071318508-1cdbab80d002?auto=format&fit=crop&w=1200&q=80', '10% OFF', null,
+        [{ id: '1-2-ex-1', name: 'Queso extra', price: 800 }],
+        [{ id: '1-2-rm-1', name: 'Ajo' }, { id: '1-2-rm-2', name: 'Tomate en rodajas' }]
+      ),
+      createItem('1-3', 'Pizza Pepperoni', 'Muzzarella y pepperoni crocante.', '$9.800', 'https://images.unsplash.com/photo-1628840042765-356cda07504e?auto=format&fit=crop&w=1200&q=80', '', null,
+        [{ id: '1-3-ex-1', name: 'Queso extra', price: 800 }, { id: '1-3-ex-2', name: 'Pepperoni extra', price: 1200 }],
+        [{ id: '1-3-rm-1', name: 'Pepperoni' }]
+      ),
     ],
   },
   {
@@ -22,9 +31,18 @@ export const defaultCategories = [
     icon: '🍔',
     image: '',
     items: [
-      createItem('2-1', 'Burger Clásica', 'Carne, lechuga, tomate y queso cheddar.', '$7.900', 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=1200&q=80'),
-      createItem('2-2', 'Burger Doble', 'Doble carne, doble queso y salsa especial.', '$10.500', 'https://images.unsplash.com/photo-1553979459-d2229ba7433b?auto=format&fit=crop&w=1200&q=80', '15% OFF'),
-      createItem('2-3', 'Burger Bacon', 'Carne, queso, bacon y cebolla crocante.', '$9.900', 'https://images.unsplash.com/photo-1594212699903-ec8a3eca50f5?auto=format&fit=crop&w=1200&q=80'),
+      createItem('2-1', 'Burger Clásica', 'Carne, lechuga, tomate y queso cheddar.', '$7.900', 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=1200&q=80', '', null,
+        [{ id: '2-1-ex-1', name: 'Queso extra', price: 600 }, { id: '2-1-ex-2', name: 'Bacon', price: 700 }, { id: '2-1-ex-3', name: 'Huevo', price: 500 }],
+        [{ id: '2-1-rm-1', name: 'Lechuga' }, { id: '2-1-rm-2', name: 'Tomate' }, { id: '2-1-rm-3', name: 'Queso cheddar' }, { id: '2-1-rm-4', name: 'Aderezo' }]
+      ),
+      createItem('2-2', 'Burger Doble', 'Doble carne, doble queso y salsa especial.', '$10.500', 'https://images.unsplash.com/photo-1553979459-d2229ba7433b?auto=format&fit=crop&w=1200&q=80', '15% OFF', null,
+        [{ id: '2-2-ex-1', name: 'Bacon', price: 700 }, { id: '2-2-ex-2', name: 'Huevo', price: 500 }],
+        [{ id: '2-2-rm-1', name: 'Salsa especial' }, { id: '2-2-rm-2', name: 'Queso' }]
+      ),
+      createItem('2-3', 'Burger Bacon', 'Carne, queso, bacon y cebolla crocante.', '$9.900', 'https://images.unsplash.com/photo-1594212699903-ec8a3eca50f5?auto=format&fit=crop&w=1200&q=80', '', null,
+        [{ id: '2-3-ex-1', name: 'Queso extra', price: 600 }, { id: '2-3-ex-2', name: 'Bacon extra', price: 700 }],
+        [{ id: '2-3-rm-1', name: 'Bacon' }, { id: '2-3-rm-2', name: 'Cebolla crocante' }, { id: '2-3-rm-3', name: 'Queso' }]
+      ),
     ],
   },
   {
@@ -66,15 +84,41 @@ function normalizeStock(value) {
   return Math.max(0, Math.floor(n))
 }
 
+function normalizeModifierPrice(value) {
+  const n = Number(String(value ?? '').replace(/[^0-9.-]/g, ''))
+  if (!Number.isFinite(n)) return 0
+  return Math.max(0, Math.round(n))
+}
+
+function normalizeExtras(extras, itemId) {
+  if (!Array.isArray(extras)) return []
+  return extras.map((ex, i) => ({
+    id: ex?.id || `${itemId}-ex-${i + 1}`,
+    name: String(ex?.name || '').trim(),
+    price: normalizeModifierPrice(ex?.price),
+  })).filter((ex) => ex.name)
+}
+
+function normalizeRemovables(removables, itemId) {
+  if (!Array.isArray(removables)) return []
+  return removables.map((rm, i) => ({
+    id: rm?.id || `${itemId}-rm-${i + 1}`,
+    name: String(rm?.name || '').trim(),
+  })).filter((rm) => rm.name)
+}
+
 function normalizeItem(item, catId, index) {
+  const id = item?.id || `${catId}-${index + 1}`
   return {
-    id: item?.id || `${catId}-${index + 1}`,
+    id,
     name: item?.name || 'Sin nombre',
     description: item?.description || '',
     price: item?.price || '',
     image: item?.image || '',
     discount: item?.discount || '',
     stock: normalizeStock(item?.stock),
+    extras: normalizeExtras(item?.extras, id),
+    removables: normalizeRemovables(item?.removables, id),
   }
 }
 

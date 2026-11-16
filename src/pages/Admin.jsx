@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import FooterNav from '../components/FooterNav.jsx'
 import { getCategories, saveCategories, defaultCategories } from '../data/categories.js'
 import { getPromotions, savePromotions, defaultPromotions } from '../data/promotions.js'
 import { getSlides, saveSlides, defaultSlides } from '../data/slides.js'
@@ -42,7 +43,7 @@ function Admin() {
         cat.id === categoryId
           ? {
               ...cat,
-              items: [...(cat.items || []), { id: createId(), name: 'Nueva comida', description: '', price: '', image: '', discount: '', stock: '' }],
+              items: [...(cat.items || []), { id: createId(), name: 'Nueva comida', description: '', price: '', image: '', discount: '', stock: '', extras: [], removables: [] }],
             }
           : cat,
       ),
@@ -70,6 +71,43 @@ function Admin() {
           : cat,
       ),
     )
+  }
+
+  const addExtra = (categoryId, itemId) => {
+    setCategories((current) => current.map((cat) => cat.id === categoryId ? {
+      ...cat,
+      items: (cat.items || []).map((item) => item.id === itemId ? { ...item, extras: [...(item.extras || []), { id: createId(), name: '', price: 0 }] } : item),
+    } : cat))
+  }
+  const updateExtra = (categoryId, itemId, extraId, field, value) => {
+    setCategories((current) => current.map((cat) => cat.id === categoryId ? {
+      ...cat,
+      items: (cat.items || []).map((item) => item.id === itemId ? { ...item, extras: (item.extras || []).map((ex) => ex.id === extraId ? { ...ex, [field]: value } : ex) } : item),
+    } : cat))
+  }
+  const removeExtra = (categoryId, itemId, extraId) => {
+    setCategories((current) => current.map((cat) => cat.id === categoryId ? {
+      ...cat,
+      items: (cat.items || []).map((item) => item.id === itemId ? { ...item, extras: (item.extras || []).filter((ex) => ex.id !== extraId) } : item),
+    } : cat))
+  }
+  const addRemovable = (categoryId, itemId) => {
+    setCategories((current) => current.map((cat) => cat.id === categoryId ? {
+      ...cat,
+      items: (cat.items || []).map((item) => item.id === itemId ? { ...item, removables: [...(item.removables || []), { id: createId(), name: '' }] } : item),
+    } : cat))
+  }
+  const updateRemovable = (categoryId, itemId, remId, value) => {
+    setCategories((current) => current.map((cat) => cat.id === categoryId ? {
+      ...cat,
+      items: (cat.items || []).map((item) => item.id === itemId ? { ...item, removables: (item.removables || []).map((rm) => rm.id === remId ? { ...rm, name: value } : rm) } : item),
+    } : cat))
+  }
+  const removeRemovable = (categoryId, itemId, remId) => {
+    setCategories((current) => current.map((cat) => cat.id === categoryId ? {
+      ...cat,
+      items: (cat.items || []).map((item) => item.id === itemId ? { ...item, removables: (item.removables || []).filter((rm) => rm.id !== remId) } : item),
+    } : cat))
   }
 
   const updatePromotion = (id, field, value) => {
@@ -134,6 +172,15 @@ function Admin() {
         const stock = rawStock === '' || rawStock === null || rawStock === undefined || Number.isNaN(Number(rawStock))
           ? null
           : Math.max(0, Math.floor(Number(rawStock)))
+        const extras = (item.extras || []).map((ex, i) => ({
+          id: ex.id || `${item.id || itemIndex}-ex-${i + 1}`,
+          name: String(ex.name || '').trim(),
+          price: Math.max(0, Math.round(Number(String(ex.price ?? '').replace(/[^0-9.-]/g, '')) || 0)),
+        })).filter((ex) => ex.name)
+        const removables = (item.removables || []).map((rm, i) => ({
+          id: rm.id || `${item.id || itemIndex}-rm-${i + 1}`,
+          name: String(rm.name || '').trim(),
+        })).filter((rm) => rm.name)
         return {
           id: item.id || `${cat.id || index + 1}-${itemIndex + 1}`,
           name: item.name?.trim() || 'Sin nombre',
@@ -142,6 +189,8 @@ function Admin() {
           image: item.image?.trim() || '',
           discount: item.discount?.trim() || '',
           stock,
+          extras,
+          removables,
         }
       }),
     }))
@@ -218,7 +267,7 @@ function Admin() {
         <p>Cambia el local, las categorías, las comidas, promociones y el carrusel.</p>
       </header>
 
-      <main className="admin-content">
+      <main className="admin-content with-footer-nav">
         <section className="admin-card">
           <h2 className="admin-section-title">Configuración del local</h2>
 
@@ -432,6 +481,29 @@ function Admin() {
                     <input type="file" accept="image/*" onChange={(e) => readFileAsDataUrl(e.target.files?.[0], (v) => updateItem(cat.id, item.id, 'image', v))} />
                   </label>
                   {item.image ? <img src={item.image} alt={item.name} className="admin-preview" /> : <div className="admin-preview empty">Sin imagen</div>}
+
+                  <div className="admin-mods">
+                    <h4 className="admin-subsection-title">Agregados (extras con costo opcional)</h4>
+                    {(item.extras || []).map((ex) => (
+                      <div key={ex.id} className="admin-mod-row">
+                        <input type="text" value={ex.name || ''} onChange={(e) => updateExtra(cat.id, item.id, ex.id, 'name', e.target.value)} placeholder="Ej: Queso extra" />
+                        <input type="number" min="0" step="1" value={ex.price ?? 0} onChange={(e) => updateExtra(cat.id, item.id, ex.id, 'price', e.target.value)} placeholder="Precio" />
+                        <button type="button" className="admin-danger" onClick={() => removeExtra(cat.id, item.id, ex.id)}>Quitar</button>
+                      </div>
+                    ))}
+                    <button type="button" className="admin-secondary" onClick={() => addExtra(cat.id, item.id)}>Agregar extra</button>
+                  </div>
+
+                  <div className="admin-mods">
+                    <h4 className="admin-subsection-title">Opciones para quitar (ingredientes incluidos)</h4>
+                    {(item.removables || []).map((rm) => (
+                      <div key={rm.id} className="admin-mod-row">
+                        <input type="text" value={rm.name || ''} onChange={(e) => updateRemovable(cat.id, item.id, rm.id, e.target.value)} placeholder="Ej: Cebolla" />
+                        <button type="button" className="admin-danger" onClick={() => removeRemovable(cat.id, item.id, rm.id)}>Quitar</button>
+                      </div>
+                    ))}
+                    <button type="button" className="admin-secondary" onClick={() => addRemovable(cat.id, item.id)}>Agregar opción para quitar</button>
+                  </div>
                 </div>
               ))}
               <button type="button" className="admin-secondary" onClick={() => addItem(cat.id)}>Agregar comida a esta categoría</button>
@@ -510,6 +582,7 @@ function Admin() {
 
         {message && <p className="admin-message">{message}</p>}
       </main>
+      <FooterNav />
     </div>
   )
 }

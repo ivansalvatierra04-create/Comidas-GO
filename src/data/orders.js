@@ -68,6 +68,10 @@ export function buildOrderMessage(order, storeName = '') {
   lines.push('*Detalle:*')
   order.items.forEach((item) => {
     lines.push(`- ${item.quantity} x ${item.name} (${item.price || formatCurrency(item.priceValue)})`)
+    const extras = item.modifiers?.extras || []
+    const removed = item.modifiers?.removed || []
+    if (extras.length) lines.push(`  + Agregados: ${extras.map((e) => e.name).join(', ')}`)
+    if (removed.length) lines.push(`  - Sin: ${removed.map((r) => r.name).join(', ')}`)
   })
   lines.push('')
   lines.push(`*Total:* ${order.totalText || formatCurrency(order.total)}`)

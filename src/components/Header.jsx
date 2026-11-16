@@ -66,6 +66,7 @@ function Header() {
       {open && (
         <nav className="menu-panel" aria-label="Menú principal">
           <Link to="/inicio" onClick={() => setOpen(false)}>Inicio</Link>
+          <Link to="/caja" onClick={() => setOpen(false)}>Caja</Link>
           <Link to="/admin" onClick={() => setOpen(false)}>Administrar app</Link>
         </nav>
       )}

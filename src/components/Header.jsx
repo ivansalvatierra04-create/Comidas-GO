@@ -4,6 +4,7 @@ import defaultLogo from '../assets/logo.svg'
 import { getCartCount } from '../data/cart.js'
 import { isOwnerAuthed, isOwnerProtected, logoutOwner } from '../data/ownerAuth.js'
 import { getSettings } from '../data/settings.js'
+import { IS_CLIENT_BUILD } from '../platform/mode.js'
 
 function Header() {
   const [open, setOpen] = useState(false)
@@ -81,7 +82,7 @@ function Header() {
       {open && (
         <nav className="menu-panel" aria-label="Menú principal">
           <Link to="/inicio" onClick={() => setOpen(false)}>Inicio</Link>
-          {ownerProtected ? (
+          {!IS_CLIENT_BUILD && (ownerProtected ? (
             ownerAuthed ? (
               <>
                 <Link to="/caja" onClick={() => setOpen(false)}>Caja</Link>
@@ -97,7 +98,7 @@ function Header() {
               <Link to="/caja" onClick={() => setOpen(false)}>Caja</Link>
               <span className="menu-note">Configurá un PIN de dueño para proteger el acceso.</span>
             </>
-          )}
+          ))}
         </nav>
       )}
     </header>

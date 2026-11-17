@@ -4,6 +4,10 @@ import { VitePWA } from 'vite-plugin-pwa'
 
 // https://vite.dev/config/
 export default defineConfig({
+  build: {
+    // La versión de clientes se genera en una carpeta separada.
+    outDir: process.env.VITE_APP_MODE === 'client' ? 'dist-clientes' : 'dist',
+  },
   plugins: [
     react(),
     VitePWA({

@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { Navigate } from 'react-router-dom'
+import { IS_CLIENT_BUILD } from '../platform/mode.js'
 import { isSuperAdminAuthed, isSuperAdminConfigured, loginSuperAdmin, setSuperAdminPassword } from '../platform/auth.js'
 
 function SuperAdminGate({ children }) {
@@ -28,6 +30,7 @@ function SuperAdminGate({ children }) {
     setNewPass('')
   }
 
+  if (IS_CLIENT_BUILD) return <Navigate to="/" replace />
   if (authed) return children
 
   return (

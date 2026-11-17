@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, Navigate } from 'react-router-dom'
+import { IS_CLIENT_BUILD } from '../platform/mode.js'
 import FooterNav from './FooterNav.jsx'
 import Header from './Header.jsx'
 import { isOwnerAuthed, isOwnerProtected, loginOwner } from '../data/ownerAuth.js'
@@ -21,6 +22,7 @@ function OwnerGate({ children }) {
     }
   }, [])
 
+  if (IS_CLIENT_BUILD) return <Navigate to="/" replace />
   if (authed) return children
 
   const protectedMode = isOwnerProtected()

@@ -1,4 +1,5 @@
 import { NavLink } from 'react-router-dom'
+import { IS_CLIENT_BUILD } from '../platform/mode.js'
 
 function HomeIcon() {
   return (
@@ -32,6 +33,8 @@ function HelpIcon() {
 
 function FooterNav() {
   return (
+    <>
+    {IS_CLIENT_BUILD && <div className="client-credit">Desarrollado con COMIDAS-GO</div>}
     <nav className="footer-nav" aria-label="Navegación inferior">
       <NavLink to="/inicio" className={({ isActive }) => `footer-link ${isActive ? 'active' : ''}`}>
         <HomeIcon />
@@ -46,6 +49,7 @@ function FooterNav() {
         <span>Ayuda</span>
       </NavLink>
     </nav>
+    </>
   )
 }
 

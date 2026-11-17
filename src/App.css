@@ -185,6 +185,18 @@
   padding-bottom: 98px;
 }
 
+.client-credit {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 74px;
+  z-index: 19;
+  text-align: center;
+  font-size: 10px;
+  opacity: 0.55;
+  pointer-events: none;
+}
+
 .footer-nav {
   position: fixed;
   left: 0;

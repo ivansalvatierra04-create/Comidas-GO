@@ -153,34 +153,38 @@ function Carrito() {
       : `Listo para retirar aprox. en ${etaMinutes} min (${etaAtDate.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })})`
 
     const snapshotItems = getCart().items.map((i) => ({ ...i }))
-    const order = createOrderFromCart({
-      customerName: customerName.trim(),
-      customerPhone: customerPhone.trim(),
-      deliveryType,
-      address: address.trim(),
-      notes: notes.trim(),
-      paymentMethod,
-      paymentMethodLabel: selectedPayment.label,
-      paymentInfo: selectedPayment.info,
-      etaMinutes,
-      etaAt: etaAtDate.toISOString(),
-      etaLabel,
-    }, { items: snapshotItems })
+    try {
+      const order = createOrderFromCart({
+        customerName: customerName.trim(),
+        customerPhone: customerPhone.trim(),
+        deliveryType,
+        address: address.trim(),
+        notes: notes.trim(),
+        paymentMethod,
+        paymentMethodLabel: selectedPayment.label,
+        paymentInfo: selectedPayment.info,
+        etaMinutes,
+        etaAt: etaAtDate.toISOString(),
+        etaLabel,
+      }, { items: snapshotItems })
 
-    if (order) {
-      decreaseStockForOrder(snapshotItems)
-      addCajaMovement({
-        type: 'income',
-        amount: order.total,
-        concept: `Venta pedido #${String(order.id).slice(-5)}`,
-        category: 'Ventas',
-        date: order.createdAt,
-        method: order.payment?.methodLabel || '',
-        note: order.customer?.name ? `Cliente: ${order.customer.name}` : '',
-        source: 'order',
-        orderId: order.id,
-      })
-      setConfirmedOrder(order)
+      if (order) {
+        decreaseStockForOrder(snapshotItems)
+        addCajaMovement({
+          type: 'income',
+          amount: order.total,
+          concept: `Venta ${order.saleCode || `#${String(order.id).slice(-5)}`}`,
+          category: 'Ventas',
+          date: order.createdAt,
+          method: order.payment?.methodLabel || '',
+          note: order.customer?.name ? `Cliente: ${order.customer.name}` : '',
+          source: 'order',
+          orderId: order.id,
+        })
+        setConfirmedOrder(order)
+      }
+    } catch (e) {
+      setError(e?.message || 'No se pudo confirmar el pedido.')
     }
   }
 
@@ -198,7 +202,7 @@ function Carrito() {
             <h1>Pedido confirmado</h1>
             <p className="ticket-sub">Comprobante para el cliente</p>
             <div className="ticket-box">
-              <p><strong>Pedido:</strong> #{String(confirmedOrder.id).slice(-5)}</p>
+              <p><strong>Venta:</strong> {confirmedOrder.saleCode || `#${String(confirmedOrder.id).slice(-5)}`}</p>
               <p><strong>Fecha:</strong> {new Date(confirmedOrder.createdAt).toLocaleString('es-AR')}</p>
               <p><strong>Estado:</strong> {confirmedOrder.status}</p>
               <hr />

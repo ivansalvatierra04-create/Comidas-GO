@@ -20,6 +20,16 @@ function OrdersIcon() {
   )
 }
 
+function HelpIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="12" cy="12" r="9" />
+      <path d="M9.5 9a2.5 2.5 0 1 1 4.2 1.8c-.9.8-1.7 1.3-1.7 2.7" />
+      <circle cx="12" cy="17" r="1" fill="currentColor" stroke="none" />
+    </svg>
+  )
+}
+
 function FooterNav() {
   return (
     <nav className="footer-nav" aria-label="Navegación inferior">
@@ -30,6 +40,10 @@ function FooterNav() {
       <NavLink to="/pedidos" className={({ isActive }) => `footer-link ${isActive ? 'active' : ''}`}>
         <OrdersIcon />
         <span>Mis pedidos</span>
+      </NavLink>
+      <NavLink to="/ayuda" className={({ isActive }) => `footer-link ${isActive ? 'active' : ''}`}>
+        <HelpIcon />
+        <span>Ayuda</span>
       </NavLink>
     </nav>
   )

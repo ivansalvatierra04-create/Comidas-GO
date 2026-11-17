@@ -2,28 +2,43 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import defaultLogo from '../assets/logo.svg'
 import { getCartCount } from '../data/cart.js'
+import { isOwnerAuthed, isOwnerProtected, logoutOwner } from '../data/ownerAuth.js'
 import { getSettings } from '../data/settings.js'
 
 function Header() {
   const [open, setOpen] = useState(false)
   const [settings, setSettings] = useState(() => getSettings())
   const [cartCount, setCartCount] = useState(() => getCartCount())
+  const [ownerAuthed, setOwnerAuthed] = useState(() => isOwnerAuthed())
+  const [ownerProtected, setOwnerProtected] = useState(() => isOwnerProtected())
   const navigate = useNavigate()
 
   useEffect(() => {
-    const sync = () => setSettings(getSettings())
+    const sync = () => {
+      setSettings(getSettings())
+      setOwnerAuthed(isOwnerAuthed())
+      setOwnerProtected(isOwnerProtected())
+    }
     const syncCart = () => setCartCount(getCartCount())
     window.addEventListener('storage', sync)
     window.addEventListener('settings-updated', sync)
+    window.addEventListener('owner-auth-updated', sync)
     window.addEventListener('storage', syncCart)
     window.addEventListener('cart-updated', syncCart)
     return () => {
       window.removeEventListener('storage', sync)
       window.removeEventListener('settings-updated', sync)
+      window.removeEventListener('owner-auth-updated', sync)
       window.removeEventListener('storage', syncCart)
       window.removeEventListener('cart-updated', syncCart)
     }
   }, [])
+
+  const handleLogoutOwner = () => {
+    logoutOwner()
+    setOpen(false)
+    navigate('/inicio')
+  }
 
   const logo = settings.logo || defaultLogo
 
@@ -66,8 +81,23 @@ function Header() {
       {open && (
         <nav className="menu-panel" aria-label="Menú principal">
           <Link to="/inicio" onClick={() => setOpen(false)}>Inicio</Link>
-          <Link to="/caja" onClick={() => setOpen(false)}>Caja</Link>
-          <Link to="/admin" onClick={() => setOpen(false)}>Administrar app</Link>
+          {ownerProtected ? (
+            ownerAuthed ? (
+              <>
+                <Link to="/caja" onClick={() => setOpen(false)}>Caja</Link>
+                <Link to="/admin" onClick={() => setOpen(false)}>Administrar app</Link>
+                <button type="button" className="menu-link-button" onClick={handleLogoutOwner}>Cerrar sesión dueño</button>
+              </>
+            ) : (
+              <Link to="/admin" onClick={() => setOpen(false)}>Acceso dueño</Link>
+            )
+          ) : (
+            <>
+              <Link to="/admin" onClick={() => setOpen(false)}>Administrar app</Link>
+              <Link to="/caja" onClick={() => setOpen(false)}>Caja</Link>
+              <span className="menu-note">Configurá un PIN de dueño para proteger el acceso.</span>
+            </>
+          )}
         </nav>
       )}
     </header>

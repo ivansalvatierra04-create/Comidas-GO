@@ -1947,3 +1947,26 @@
 .home.with-footer-nav { padding-bottom: 90px; box-sizing: border-box; }
 .home-wrap { min-height: 100dvh; }
 .admin-content.with-footer-nav { padding-bottom: 110px; }
+
+.menu-link-button {
+  background: none;
+  border: none;
+  padding: 10px 12px;
+  text-align: left;
+  font: inherit;
+  font-weight: 700;
+  color: #2b1d12;
+  cursor: pointer;
+  border-radius: 10px;
+}
+.menu-link-button:hover { background: #fff4c9; }
+.menu-note { display: block; padding: 6px 12px 10px; font-size: 0.8rem; color: #7a6554; font-weight: 600; }
+.owner-gate-form { max-width: 420px; }
+.share-qr-wrap { margin-top: 10px; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+.share-qr { width: 220px; height: 220px; border-radius: 12px; border: 2px solid #eadfc7; background: #fff; }
+.muted-text { margin: 0; color: #6d5a49; font-weight: 600; }
+
+.manual-page { display: flex; flex-direction: column; gap: 14px; }
+.manual-section h2 { margin: 0 0 8px; font-size: 1.05rem; font-weight: 900; color: #2b1d12; }
+.manual-section ul { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; color: #4f3f33; font-weight: 600; }
+.manual-section li { line-height: 1.45; }

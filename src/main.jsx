@@ -4,8 +4,10 @@ import { BrowserRouter } from 'react-router-dom'
 import { registerSW } from 'virtual:pwa-register'
 import './index.css'
 import App from './App.jsx'
+import { ensureTenantMigration } from './platform/migrate.js'
 
 registerSW({ immediate: true })
+ensureTenantMigration()
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

@@ -1,25 +1,15 @@
-const STORAGE_KEY = 'comidasgo-promotions'
+import { storeKey } from './storeScope.js'
+
+function key(storeId) { return storeKey('promotions', storeId) }
 
 export const defaultPromotions = [
-  {
-    id: '1',
-    title: 'Promo Hamburguesa',
-    description: 'Hamburguesa con papas',
-    discount: '20% OFF',
-    image: '',
-  },
-  {
-    id: '2',
-    title: 'Promo Pizza',
-    description: 'Pizza grande muzzarella',
-    discount: '2x1',
-    image: '',
-  },
+  { id: '1', title: 'Promo Hamburguesa', description: 'Hamburguesa con papas', discount: '20% OFF', image: '' },
+  { id: '2', title: 'Promo Pizza', description: 'Pizza grande muzzarella', discount: '2x1', image: '' },
 ]
 
-export function getPromotions() {
+export function getPromotions(storeId) {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY)
+    const raw = localStorage.getItem(key(storeId))
     if (!raw) return defaultPromotions
     const parsed = JSON.parse(raw)
     if (!Array.isArray(parsed)) return defaultPromotions
@@ -35,6 +25,7 @@ export function getPromotions() {
   }
 }
 
-export function savePromotions(promotions) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(promotions))
+export function savePromotions(promotions, storeId) {
+  localStorage.setItem(key(storeId), JSON.stringify(promotions))
+  window.dispatchEvent(new Event('promotions-updated'))
 }

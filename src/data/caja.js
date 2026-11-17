@@ -1,4 +1,10 @@
-const STORAGE_KEY = 'comidasgo-caja'
+import { logAudit } from '../platform/audit.js'
+import { assertStoreOperational } from '../platform/tenant.js'
+import { storeKey, currentStoreId } from './storeScope.js'
+
+function key(storeId) {
+  return storeKey('caja', storeId)
+}
 
 export const cajaCategories = {
   income: ['Ventas', 'Otros ingresos'],
@@ -9,9 +15,9 @@ function createId() {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
 }
 
-export function getCajaMovements() {
+export function getCajaMovements(storeId) {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY)
+    const raw = localStorage.getItem(key(storeId))
     if (!raw) return []
     const parsed = JSON.parse(raw)
     return Array.isArray(parsed) ? parsed : []
@@ -20,16 +26,23 @@ export function getCajaMovements() {
   }
 }
 
-export function saveCajaMovements(movements) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(movements))
+export function saveCajaMovements(movements, storeId) {
+  localStorage.setItem(key(storeId), JSON.stringify(movements))
   window.dispatchEvent(new Event('caja-updated'))
 }
 
-export function addCajaMovement({ type, amount, concept, category, date, method = '', note = '', source = 'manual', orderId = '' }) {
+export function addCajaMovement({ type, amount, concept, category, date, method = '', note = '', source = 'manual', orderId = '', user = 'owner' }, storeId = currentStoreId()) {
+  const license = assertStoreOperational(storeId)
+  if (!license.ok) {
+    const err = new Error(license.reason || 'Licencia no operativa')
+    err.code = 'LICENSE_BLOCKED'
+    throw err
+  }
   const value = Math.max(0, Number(amount) || 0)
   if (!value) return null
   const movement = {
     id: createId(),
+    storeId,
     type: type === 'expense' ? 'expense' : 'income',
     amount: value,
     concept: String(concept || '').trim() || (type === 'expense' ? 'Egreso' : 'Ingreso'),
@@ -39,15 +52,24 @@ export function addCajaMovement({ type, amount, concept, category, date, method 
     note: String(note || '').trim(),
     source,
     orderId: String(orderId || ''),
+    user,
   }
-  const movements = [movement, ...getCajaMovements()]
-  saveCajaMovements(movements)
+  const movements = [movement, ...getCajaMovements(storeId)]
+  saveCajaMovements(movements, storeId)
+  logAudit({ storeId, user, action: movement.type === 'expense' ? 'cash_expense' : 'cash_income', entity: 'caja', entityId: movement.id, details: { amount: movement.amount, concept: movement.concept, source: movement.source } })
   return movement
 }
 
-export function deleteCajaMovement(id) {
-  const movements = getCajaMovements().filter((m) => String(m.id) !== String(id))
-  saveCajaMovements(movements)
+export function deleteCajaMovement(id, { user = 'owner', storeId = currentStoreId() } = {}) {
+  const license = assertStoreOperational(storeId)
+  if (!license.ok) {
+    const err = new Error(license.reason || 'Licencia no operativa')
+    err.code = 'LICENSE_BLOCKED'
+    throw err
+  }
+  const movements = getCajaMovements(storeId).filter((m) => String(m.id) !== String(id))
+  saveCajaMovements(movements, storeId)
+  logAudit({ storeId, user, action: 'cash_movement_deleted', entity: 'caja', entityId: id })
 }
 
 export function getCajaSummary(movements = getCajaMovements()) {

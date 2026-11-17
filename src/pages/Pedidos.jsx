@@ -45,10 +45,10 @@ function Pedidos() {
               <article key={order.id} className="order-card">
                 <div className="order-header">
                   <div>
-                    <h2>Pedido #{String(order.id).slice(-5)}</h2>
+                    <h2>{order.saleCode ? `Venta ${order.saleCode}` : `Pedido #${String(order.id).slice(-5)}`}</h2>
                     <p className="order-date">{formatDate(order.createdAt)}</p>
                   </div>
-                  <span className="order-status">{order.status}</span>
+                  <span className="order-status">{order.annulled ? 'Anulada' : order.status}</span>
                 </div>
                 <ul className="order-items">
                   {order.items.map((item, i) => (

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import FooterNav from '../components/FooterNav.jsx'
 import { getCategories, saveCategories, defaultCategories } from '../data/categories.js'
+import { logoutOwner } from '../data/ownerAuth.js'
 import { getPromotions, savePromotions, defaultPromotions } from '../data/promotions.js'
 import { getSlides, saveSlides, defaultSlides } from '../data/slides.js'
 import { getSettings, saveSettings, defaultSettings } from '../data/settings.js'
@@ -23,6 +24,7 @@ function Admin() {
   const [promotions, setPromotions] = useState(() => getPromotions())
   const [settings, setSettings] = useState(() => getSettings())
   const [message, setMessage] = useState('')
+  const [shareCopied, setShareCopied] = useState(false)
 
   const showMessage = (text) => {
     setMessage(text)
@@ -228,6 +230,7 @@ function Admin() {
   }
 
   const handleSaveSettings = () => {
+    const previousPin = String(getSettings().ownerPin || '').trim()
     const cleaned = {
       storeName1: settings.storeName1?.trim() || defaultSettings.storeName1,
       storeName2: settings.storeName2?.trim() || '',
@@ -245,11 +248,17 @@ function Admin() {
       paymentMpLink: settings.paymentMpLink?.trim() || '',
       etaPickupMinutes: Number.isFinite(Number(settings.etaPickupMinutes)) ? Math.max(1, Math.floor(Number(settings.etaPickupMinutes))) : defaultSettings.etaPickupMinutes,
       etaDeliveryMinutes: Number.isFinite(Number(settings.etaDeliveryMinutes)) ? Math.max(1, Math.floor(Number(settings.etaDeliveryMinutes))) : defaultSettings.etaDeliveryMinutes,
+      ownerPin: String(settings.ownerPin || '').trim(),
     }
     setSettings(cleaned)
-    saveSettings(cleaned)
+    saveSettings(cleaned, { user: 'owner' })
     window.dispatchEvent(new Event('settings-updated'))
-    showMessage('Configuración del local guardada')
+    if (cleaned.ownerPin !== previousPin) {
+      logoutOwner()
+      showMessage(cleaned.ownerPin ? 'Configuración guardada. PIN actualizado: volvé a ingresar como dueño.' : 'Configuración guardada. PIN de dueño eliminado.')
+    } else {
+      showMessage('Configuración del local guardada')
+    }
   }
 
   const handleResetSettings = () => {
@@ -265,6 +274,9 @@ function Admin() {
         <Link to="/inicio" className="admin-back">← Volver</Link>
         <h1>Administrar app</h1>
         <p>Cambia el local, las categorías, las comidas, promociones y el carrusel.</p>
+        <div className="admin-actions" style={{ marginTop: '10px' }}>
+          <Link to="/admin/manual" className="admin-secondary" style={{ textDecoration: 'none', textAlign: 'center' }}>📘 Ver manual del administrador</Link>
+        </div>
       </header>
 
       <main className="admin-content with-footer-nav">
@@ -406,6 +418,62 @@ function Admin() {
               onChange={(e) => updateSetting('etaDeliveryMinutes', e.target.value)}
             />
           </label>
+
+          <h3 className="admin-subsection-title">Acceso de dueño (Fase 1, sin backend)</h3>
+          <p className="muted-text">Configurá un PIN para proteger Administrar app y Caja en este dispositivo. Si lo dejás vacío, el acceso queda sin protección.</p>
+          <label className="admin-field">
+            <span>PIN de dueño</span>
+            <input
+              type="password"
+              value={settings.ownerPin || ''}
+              onChange={(e) => updateSetting('ownerPin', e.target.value)}
+              placeholder="Ej: 1234"
+            />
+          </label>
+
+          <h3 className="admin-subsection-title">Compartir app con clientes</h3>
+          <p className="muted-text">Compartí este enlace o QR para que tus clientes abran la app (versión cliente). Pueden instalarla desde el navegador como app (PWA).</p>
+          <label className="admin-field">
+            <span>Enlace de la app</span>
+            <input type="text" readOnly value={typeof window !== 'undefined' ? window.location.origin : ''} />
+          </label>
+          <div className="admin-actions">
+            <button
+              type="button"
+              className="admin-secondary"
+              onClick={async () => {
+                const url = window.location.origin
+                try {
+                  await navigator.clipboard.writeText(url)
+                  setShareCopied(true)
+                  setTimeout(() => setShareCopied(false), 1800)
+                } catch {
+                  setShareCopied(false)
+                }
+              }}
+            >
+              {shareCopied ? 'Enlace copiado' : 'Copiar enlace'}
+            </button>
+            <a
+              className="admin-secondary"
+              href={`https://wa.me/?text=${encodeURIComponent(`Te comparto la app: ${typeof window !== 'undefined' ? window.location.origin : ''}`)}`}
+              target="_blank"
+              rel="noreferrer"
+            >
+              Compartir por WhatsApp
+            </a>
+          </div>
+          {typeof window !== 'undefined' && window.location.origin && (
+            <div className="share-qr-wrap">
+              <img
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(window.location.origin)}`}
+                alt="QR para compartir la app"
+                className="share-qr"
+              />
+              <p className="muted-text">Sugerencia: indicá a clientes iPhone usar Safari → Compartir → “Agregar a pantalla de inicio”.</p>
+            </div>
+          )}
+
           <div className="admin-actions">
             <button type="button" className="admin-secondary" onClick={handleResetSettings}>Restaurar local</button>
             <button type="button" className="admin-primary" onClick={handleSaveSettings}>Guardar local</button>

@@ -1,4 +1,8 @@
-const STORAGE_KEY = 'comidasgo-cart'
+import { storeKey } from './storeScope.js'
+
+function key() {
+  return storeKey('cart')
+}
 
 export function parsePriceValue(price) {
   if (typeof price === 'number') return price
@@ -45,9 +49,9 @@ function normalizeCartItem(item) {
   }
 }
 
-export function getCart() {
+export function getCart(storeId) {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY)
+    const raw = localStorage.getItem(storeKey('cart', storeId))
     if (!raw) return { items: [], couponCode: '' }
     const parsed = JSON.parse(raw)
     if (!parsed || !Array.isArray(parsed.items)) return { items: [], couponCode: '' }
@@ -60,8 +64,8 @@ export function getCart() {
   }
 }
 
-export function saveCart(cart) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(cart))
+export function saveCart(cart, storeId) {
+  localStorage.setItem(storeKey('cart', storeId), JSON.stringify(cart))
   window.dispatchEvent(new Event('cart-updated'))
 }
 

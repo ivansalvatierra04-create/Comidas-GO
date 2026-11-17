@@ -50,11 +50,15 @@ function Caja() {
     const value = Number(amount)
     if (!Number.isFinite(value) || value <= 0) { setError('Ingresá un monto válido.'); return }
     if (!concept.trim()) { setError('Ingresá un concepto.'); return }
-    addCajaMovement({ type, amount: value, concept, category, method, note, source: 'manual' })
-    setAmount('')
-    setConcept('')
-    setMethod('')
-    setNote('')
+    try {
+      addCajaMovement({ type, amount: value, concept, category, method, note, source: 'manual' })
+      setAmount('')
+      setConcept('')
+      setMethod('')
+      setNote('')
+    } catch (err) {
+      setError(err?.message || 'No se pudo registrar el movimiento.')
+    }
   }
 
   return (
@@ -132,14 +136,14 @@ function Caja() {
                           {ticketOrderId === m.orderId ? 'Cerrar ticket' : 'Ver ticket'}
                         </button>
                       )}
-                      <button type="button" className="cart-remove" onClick={() => deleteCajaMovement(m.id)}>Eliminar</button>
+                      <button type="button" className="cart-remove" onClick={() => { try { deleteCajaMovement(m.id) } catch (err) { setError(err?.message || 'No se pudo eliminar el movimiento.') } }}>Eliminar</button>
                     </div>
                     {ticketOrderId === m.orderId && (
                       <div className="caja-ticket-dup">
                         {selectedOrder ? (
                           <>
                             <h3>Duplicado de venta / ticket</h3>
-                            <p><strong>Pedido:</strong> #{String(selectedOrder.id).slice(-5)}</p>
+                            <p><strong>Venta:</strong> {selectedOrder.saleCode || `#${String(selectedOrder.id).slice(-5)}`}</p>
                             <p><strong>Fecha:</strong> {formatDateTime(selectedOrder.createdAt)}</p>
                             <p><strong>Estado:</strong> {selectedOrder.status}</p>
                             <hr />

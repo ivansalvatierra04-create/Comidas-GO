@@ -1,4 +1,9 @@
-const STORAGE_KEY = 'comidasgo-settings'
+import { logAudit } from '../platform/audit.js'
+import { storeKey, currentStoreId } from './storeScope.js'
+
+function key(storeId) {
+  return storeKey('settings', storeId)
+}
 
 export const defaultSettings = {
   storeName1: 'Comidas',
@@ -17,12 +22,13 @@ export const defaultSettings = {
   paymentMpLink: '',
   etaPickupMinutes: 20,
   etaDeliveryMinutes: 40,
+  ownerPin: '',
 }
 
-export function getSettings() {
+export function getSettings(storeId) {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (!raw) return defaultSettings
+    const raw = localStorage.getItem(key(storeId))
+    if (!raw) return { ...defaultSettings }
     const parsed = JSON.parse(raw)
     return {
       ...defaultSettings,
@@ -43,12 +49,15 @@ export function getSettings() {
       paymentMpLink: parsed.paymentMpLink ?? '',
       etaPickupMinutes: Number.isFinite(Number(parsed.etaPickupMinutes)) ? Math.max(1, Math.floor(Number(parsed.etaPickupMinutes))) : defaultSettings.etaPickupMinutes,
       etaDeliveryMinutes: Number.isFinite(Number(parsed.etaDeliveryMinutes)) ? Math.max(1, Math.floor(Number(parsed.etaDeliveryMinutes))) : defaultSettings.etaDeliveryMinutes,
+      ownerPin: String(parsed.ownerPin ?? '').trim(),
     }
   } catch {
-    return defaultSettings
+    return { ...defaultSettings }
   }
 }
 
-export function saveSettings(settings) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(settings))
+export function saveSettings(settings, { user = 'owner', storeId = currentStoreId(), audit = true } = {}) {
+  localStorage.setItem(key(storeId), JSON.stringify(settings))
+  window.dispatchEvent(new Event('settings-updated'))
+  if (audit) logAudit({ storeId, user, action: 'settings_updated', entity: 'settings', entityId: storeId })
 }
